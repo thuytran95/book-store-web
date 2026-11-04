@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConditionBadge, PriceTag } from "@/components/shared/badges";
-import { BookActions } from "@/features/catalog/components/book-actions";
-import { BookGallery } from "@/features/catalog/components/book-gallery";
-import { getBook } from "@/features/catalog/server";
+import { BookDetailBreadcrumb } from "@/features/catalog/book-detail/book-detail-breadcrumb";
+import { BookDetailBuyBox } from "@/features/catalog/book-detail/book-detail-buy-box";
+import { BookDetailEditorial } from "@/features/catalog/book-detail/book-detail-editorial";
+import { BookDetailGallery } from "@/features/catalog/book-detail/book-detail-gallery";
+import { BookDetailHeroInfo } from "@/features/catalog/book-detail/book-detail-hero-info";
+import { BookDetailHighlights } from "@/features/catalog/book-detail/book-detail-highlights";
+import { BookDetailPricingPromo } from "@/features/catalog/book-detail/book-detail-pricing-promo";
+import { BookDetailRelated } from "@/features/catalog/book-detail/book-detail-related";
+import { BookDetailReviewsPlaceholder } from "@/features/catalog/book-detail/book-detail-reviews-placeholder";
+import { BookDetailSidebar } from "@/features/catalog/book-detail/book-detail-sidebar";
+import { BookDetailSpecTable } from "@/features/catalog/book-detail/book-detail-spec-table";
+import { BookDetailTrustGrid } from "@/features/catalog/book-detail/book-detail-trust-grid";
+import { bookDetailSpecRows } from "@/features/catalog/book-detail/formatters";
+import { getBook, getRelatedBooks } from "@/features/catalog/server";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -19,50 +28,77 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BookDetailPage({ params }: Props) {
-  const book = await getBook((await params).slug);
+  const { slug } = await params;
+  const book = await getBook(slug);
   if (!book || !book.is_visible) notFound();
 
+  const related = await getRelatedBooks(book.id, book.category.slug);
+  const specRows = bookDetailSpecRows(book);
+  const galleryBadge =
+    book.published_year != null ? `Ấn bản ${book.published_year}` : undefined;
+
   return (
-    <article className="grid gap-6 md:grid-cols-2 md:gap-10">
-      <BookGallery images={book.images} title={book.title} fallback={book.cover_url} />
-      <div className="grid content-start gap-4">
-        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-          <Link href="/books" className="hover:underline">Sách</Link>
-          {" / "}
-          <Link href={`/books?category=${book.category.slug}`} className="hover:underline">
-            {book.category.name}
-          </Link>
-        </nav>
-        <h1 className="text-2xl font-bold">{book.title}</h1>
-        {book.author && <p className="text-muted-foreground">{book.author}</p>}
-        <div className="flex flex-wrap items-center gap-3">
-          <PriceTag amount={book.sale_price} size="lg" />
-          <ConditionBadge pct={book.condition_pct} />
+    <div className="mx-auto max-w-7xl space-y-8 pb-12">
+      <BookDetailBreadcrumb
+        items={[
+          { label: "Sách", href: "/books" },
+          { label: book.category.name, href: `/books?category=${book.category.slug}` },
+          { label: book.title },
+        ]}
+      />
+
+      <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-12 lg:gap-8">
+        <div className="space-y-4 lg:col-span-4">
+          <BookDetailGallery
+            images={book.images}
+            title={book.title}
+            fallbackCover={book.cover_url}
+            badgeText={galleryBadge}
+          />
+          <BookDetailHighlights />
         </div>
-        <p className="text-sm">
-          {book.available > 0 ? (
-            <>Còn <strong>{book.available}</strong> cuốn</>
-          ) : (
-            <span className="text-destructive">Hết hàng</span>
-          )}
-        </p>
-        <BookActions
-          bookId={book.id}
-          title={book.title}
-          available={book.available}
-          visible={book.is_visible}
-        />
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          {book.publisher && (<><dt className="text-muted-foreground">Nhà xuất bản</dt><dd>{book.publisher}</dd></>)}
-          {book.published_year && (<><dt className="text-muted-foreground">Năm xuất bản</dt><dd>{book.published_year}</dd></>)}
-        </dl>
-        {book.description && (
-          <section aria-labelledby="desc">
-            <h2 id="desc" className="mb-1 font-semibold">Mô tả</h2>
-            <p className="whitespace-pre-line text-sm leading-relaxed">{book.description}</p>
-          </section>
-        )}
+
+        <div className="space-y-4 lg:col-span-5">
+          <BookDetailHeroInfo
+            title={book.title}
+            author={book.author}
+            publisher={book.publisher}
+            publishedYear={book.published_year}
+            categoryName={book.category.name}
+            conditionPct={book.condition_pct}
+            available={book.available}
+          />
+          <BookDetailPricingPromo salePrice={book.sale_price} />
+          <BookDetailTrustGrid />
+        </div>
+
+        <div className="lg:col-span-3">
+          <BookDetailBuyBox
+            bookId={book.id}
+            title={book.title}
+            salePrice={book.sale_price}
+            available={book.available}
+            visible={book.is_visible}
+          />
+        </div>
       </div>
-    </article>
+
+      <div className="grid grid-cols-1 gap-6 px-4 lg:grid-cols-12 lg:gap-8">
+        <div id="mo-ta" className="space-y-6 lg:col-span-8">
+          <BookDetailSpecTable rows={specRows} />
+          {book.description ? (
+            <BookDetailEditorial description={book.description} conditionPct={book.condition_pct} />
+          ) : null}
+        </div>
+        <div className="lg:col-span-4">
+          <BookDetailSidebar author={book.author} />
+        </div>
+      </div>
+
+      <div className="space-y-8 px-4">
+        <BookDetailRelated books={related} />
+        <BookDetailReviewsPlaceholder />
+      </div>
+    </div>
   );
 }

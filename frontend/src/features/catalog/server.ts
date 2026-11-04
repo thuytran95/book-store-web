@@ -42,4 +42,16 @@ export const getBook = cache(async (slug: string) => {
   }
 });
 
+/** Same-category in-stock books for the related row (excludes current id). */
+export const getRelatedBooks = cache(async (bookId: number, categorySlug: string) => {
+  const page = await getBooks({
+    category: categorySlug,
+    page: 1,
+    size: 4,
+    in_stock: true,
+    sort: "newest",
+  });
+  return page.items.filter((b) => b.id !== bookId);
+});
+
 export { DEFAULT_PAGE_SIZE };
