@@ -1,6 +1,6 @@
 ---
 name: spec-implement
-description: Implement code from spec checklist files (docs/spec/**, produced by the spec-checklist skill) one file and one bullet at a time, ticking each checkbox as `[x]` when done, then moving to the next file and finally ticking the summary files. Use whenever the user says implement/build/code this checklist, spec, model, api, hook, component or feature file, "continue the checklist", or points at a docs/spec path, even if they don't name the skill. Tests are not written (fast development).
+description: Implement code from spec checklist files (docs/spec/<task-slug>/**, produced by the spec-checklist skill) one file and one bullet at a time, ticking each checkbox as `[x]` when done, then moving to the next file and finally ticking the summary files. Use whenever the user says implement/build/code this checklist, spec, model, api, hook, component or feature file, "continue the checklist", or points at a docs/spec path, even if they don't name the skill. Tests are not written (fast development).
 ---
 
 # Spec Implement
@@ -19,11 +19,13 @@ Turn checklist specs into working code, strictly in order, keeping the checkboxe
 
 ## Input
 
-The user names a target: a single spec file, a part folder (e.g. `docs/spec/model/`), or the whole `docs/spec/`. If none is given, read `docs/spec/summary.md` and take the first unticked part. Specs follow the templates in `../spec-checklist/references/`.
+The user names a target: a task folder (`docs/spec/<task-slug>/`), a part folder (e.g. `docs/spec/landing-page/model/`), or a single spec file. Each generate run of spec-checklist owns one task folder. If none is given: list `docs/spec/*/` task folders, use the one the user named, or the only one that exists; if several exist and the request is ambiguous, ask. Then read that folder's `summary.md` and take the first unticked part.
+
+Legacy fallback: if there is a `docs/spec/summary.md` with `model/`, `api/`, … sitting directly under `docs/spec/` (no task slug), treat `docs/spec/` itself as the task folder. Specs follow the templates in `../spec-checklist/references/`.
 
 ## Workflow
 
-- [ ] 1. **Locate the target** and read its `summary.md` (part or root) to get the file order. Follow the dependency order: model, api, hook, component, features.
+- [ ] 1. **Locate the target** and read its `summary.md` (part or task-folder) to get the file order. Follow the dependency order: model, api, hook, component, features.
 - [ ] 2. **Open the first file that is not fully ticked.** Read it whole, plus the files it links to (dependencies) and the relevant section of the plan.
 - [ ] 3. **Do the bullets top to bottom, one at a time:**
   - [ ] a. Implement that single bullet.
@@ -34,8 +36,8 @@ The user names a target: a single spec file, a part folder (e.g. `docs/spec/mode
 - [ ] 5. **When all bullets are `[x]`,** tick the items under `## Done` in that file.
 - [ ] 6. **Tick the file** in its part `summary.md` (`- [ ] [file.md]...` becomes `- [x]`).
 - [ ] 7. **Move to the next file** in the order and repeat from step 2.
-- [ ] 8. **When every file in a part is ticked,** tick the part's `## Done` in its `summary.md`, then tick that part in the root `docs/spec/summary.md`.
-- [ ] 9. **When all parts are done,** tick everything remaining in the root `summary.md` (progress, how-to-use items you completed) and report.
+- [ ] 8. **When every file in a part is ticked,** tick the part's `## Done` in its `summary.md`, then tick that part in the task folder's `docs/spec/<task-slug>/summary.md`.
+- [ ] 9. **When all parts are done,** tick everything remaining in that task `summary.md` (progress, how-to-use items you completed) and report.
 
 ## Blocked or partial work
 

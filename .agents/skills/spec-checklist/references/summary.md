@@ -1,6 +1,6 @@
 # Template: Summary files
 
-## Root `spec/summary.md`
+## Task-folder root `docs/spec/<task-slug>/summary.md`
 
 ```markdown
 # Spec Summary: <Project>
@@ -28,7 +28,7 @@ Model -> API -> Hook -> Component -> Features
 - [ ] <question from the plan>
 ```
 
-## Part `spec/<part>/summary.md`
+## Part `docs/spec/<task-slug>/<part>/summary.md`
 
 ```markdown
 # <Part> Summary

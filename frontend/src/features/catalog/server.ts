@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { homeBookQuery, type HomeBookTabId } from "@/config/catalog-home";
 import { ApiError } from "@/lib/api/errors";
 import { publicApi } from "@/lib/api/server";
 import { toApiQuery, type BookQuery, DEFAULT_PAGE_SIZE } from "@/lib/book-query";
@@ -18,10 +19,16 @@ export const getBooks = cache(async (q: BookQuery) => {
 export const getNewestBooks = (size = 12) =>
   getBooks({ sort: "newest", page: 1, size, in_stock: true });
 
-/** Home page data: categories + newest in-stock books. */
+export const getHomeBookTab = (tabId: HomeBookTabId) => getBooks(homeBookQuery(tabId));
+
+/** Shop home (`/`): categories + default showcase tab books (+ optional hero fallback). */
 export const getHomeData = cache(async () => {
-  const [categories, newest] = await Promise.all([getCategories(), getNewestBooks(12)]);
-  return { categories, newest };
+  const [categories, defaultTabBooks, heroBooks] = await Promise.all([
+    getCategories(),
+    getHomeBookTab("featured"),
+    getNewestBooks(3),
+  ]);
+  return { categories, defaultTabBooks, heroBooks };
 });
 
 /** Returns null when the book does not exist (use with `notFound()`). */
