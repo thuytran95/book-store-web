@@ -3,19 +3,19 @@
 Routes: `/account/profile`, `/account/addresses`  |  Role: buyer  |  Prototype: n/a
 
 ## Uses
-- [ ] Hooks: [../hook/use-account.md](../hook/use-account.md)
-- [ ] Components: [../component/address-picker.md](../component/address-picker.md)
+- [x] Hooks: [../hook/use-account.md](../hook/use-account.md)
+- [x] Components: [../component/address-picker.md](../component/address-picker.md)
 
 ## Pages
-- [ ] `(shop)/account/layout.tsx` with tab/side navigation
-- [ ] `profile/page.tsx`: edit name, phone
-- [ ] `addresses/page.tsx`: list, add, edit, delete, set default
+- [x] `(shop)/account/layout.tsx` with tab/side navigation
+- [x] `profile/page.tsx`: edit name, phone
+- [x] `addresses/page.tsx`: list, add, edit, delete, set default
 
 ## Behaviour
-- [ ] Route guarded in `middleware.ts`
-- [ ] Toast on save; confirm dialog on delete
-- [ ] Empty state: no addresses yet
-- [ ] Responsive layout
+- [x] Route guarded in `middleware.ts`
+- [x] Toast on save; confirm dialog on delete
+- [x] Empty state: no addresses yet
+- [x] Responsive layout
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

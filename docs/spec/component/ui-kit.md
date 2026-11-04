@@ -1,20 +1,20 @@
-# Component: UI Kit
+﻿# Component: UI Kit
 
 File: `frontend/src/components/ui/`  |  Type: shared  |  Prototype: n/a
 
 ## Primitives (shadcn)
-- [ ] `Button`, `Input`, `Textarea`, `Select`, `Checkbox`, `Label`
-- [ ] `Dialog`, `Sheet` (mobile drawer), `DropdownMenu`
-- [ ] `Table`, `Tabs`, `Badge`, `Card`
-- [ ] `Toast` (sonner) provider in root layout
-- [ ] `Skeleton`
+- [x] `Button`, `Input`, `Textarea`, `Select`, `Checkbox`, `Label`
+- [x] `Dialog`, `Sheet` (mobile drawer), `DropdownMenu`
+- [x] `Table`, `Tabs`, `Badge`, `Card`
+- [x] `Toast` (sonner) provider in root layout
+- [x] `Skeleton`
 
 ## Shared widgets
-- [ ] `Pagination` props: page, pageCount, onChange
-- [ ] `EmptyState` props: title, description, action
-- [ ] `ConfirmDialog` props: title, message, onConfirm, destructive
-- [ ] `FormField` wrapper (label, error, hint) for react-hook-form
-- [ ] `ErrorMessage` mapping `ApiError.code` to Vietnamese text
+- [x] `Pagination` props: page, pageCount, onChange
+- [x] `EmptyState` props: title, description, action
+- [x] `ConfirmDialog` props: title, message, onConfirm, destructive
+- [x] `FormField` wrapper (label, error, hint) for react-hook-form
+- [x] `ErrorMessage` mapping `ApiError.code` to Vietnamese text
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

@@ -1,16 +1,16 @@
-# Hook: Orders
+﻿# Hook: Orders
 
 APIs used: [../api/orders.md](../api/orders.md)  |  Location: `frontend/src/features/orders/hooks/`
 
 ## Hooks
-- [ ] `usePlaceOrder()` mutation `POST /orders`; invalidate `["cart"]`, `["orders"]`, `["reservations"]`
-  - [ ] Handles OUT_OF_STOCK (show which book), CART_EMPTY, BOOK_UNAVAILABLE
-- [ ] `useOrders(page)` query `["orders", page]`
-- [ ] `useOrder(id)` query `["order", id]`
-- [ ] `useCancelOrder()` mutation `POST /orders/{id}/cancel`; handles INVALID_TRANSITION
+- [x] `usePlaceOrder()` mutation `POST /orders`; invalidate `["cart"]`, `["orders"]`, `["reservations"]`
+  - [x] Handles OUT_OF_STOCK (show which book), CART_EMPTY, BOOK_UNAVAILABLE
+- [x] `useOrders(page)` query `["orders", page]`
+- [x] `useOrder(id)` query `["order", id]`
+- [x] `useCancelOrder()` mutation `POST /orders/{id}/cancel`; handles INVALID_TRANSITION
 
 ## Forms
-- [ ] Checkout form: address, payment method, note (Zod)
+- [x] Checkout form: address, payment method, note (Zod)
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

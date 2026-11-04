@@ -3,18 +3,18 @@
 Routes: `/reservations`  |  Role: buyer  |  Prototype: n/a
 
 ## Uses
-- [ ] Hooks: [../hook/use-reservations.md](../hook/use-reservations.md)
-- [ ] Components: `BookCard`-style row, `ConfirmDialog`
+- [x] Hooks: [../hook/use-reservations.md](../hook/use-reservations.md)
+- [x] Components: `BookCard`-style row, `ConfirmDialog`
 
 ## Pages
-- [ ] `(shop)/reservations/page.tsx`: list of holds with countdown to expiry
-- [ ] Actions: cancel, "buy now" (adds to cart / goes to checkout with the reservation id)
-- [ ] "Reserve" button on book detail (see shop-catalog)
+- [x] `(shop)/reservations/page.tsx`: list of holds with countdown to expiry
+- [x] Actions: cancel, "buy now" (adds to cart / goes to checkout with the reservation id)
+- [x] "Reserve" button on book detail (see shop-catalog)
 
 ## Behaviour
-- [ ] Expired holds shown as expired and disabled
-- [ ] RESERVATION_LIMIT and OUT_OF_STOCK messages
-- [ ] Empty state
+- [x] Expired holds shown as expired and disabled
+- [x] RESERVATION_LIMIT and OUT_OF_STOCK messages
+- [x] Empty state
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

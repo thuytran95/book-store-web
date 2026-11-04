@@ -44,6 +44,8 @@ def build_filters(q: BookQuery, *, public: bool = True) -> list:
     filters = []
     if public:
         filters.append(Book.is_visible.is_(True))
+    elif q.visible is not None:
+        filters.append(Book.is_visible.is_(q.visible))
     if q.category_slug:
         filters.append(Book.category_id.in_(
             select(Category.id).where(Category.slug == q.category_slug)

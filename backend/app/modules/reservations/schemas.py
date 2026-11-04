@@ -20,3 +20,6 @@ class ReservationRead(BaseModel):
     status: ReservationStatus
     expires_at: datetime
     created_at: datetime
+    book_title: str = ""
+    book_slug: str = ""
+    cover_url: str | None = None

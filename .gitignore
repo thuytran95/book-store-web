@@ -3,6 +3,9 @@ node_modules/
 .venv/
 .env
 media/
+backups/
+deploy/certs/*.pem
+frontend/openapi.json
 __pycache__/
 *.pyc
 .ruff_cache/

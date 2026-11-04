@@ -13,6 +13,7 @@ Base path: `/api/v1/admin/books/{id}/images`  |  Models: [../model/book.md](../m
 
 ## Endpoints
 - [x] `POST /admin/books/{id}/images` | admin | multipart | returns BookImage
+- [x] `PUT /admin/books/{id}/images` | admin | body `{ ids }` permutation; sets `position` from index | errors: INVALID_IMAGE_ORDER
 - [x] `DELETE /admin/books/{id}/images/{image_id}` | admin
 
 ## Done

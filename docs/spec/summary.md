@@ -1,4 +1,4 @@
-# Spec Summary: Book Store (used-book shop)
+﻿# Spec Summary: Book Store (used-book shop)
 
 Source: [../PLAN-codebase.md](../PLAN-codebase.md)  |  Prototype: none (use the plan's screen tables)  |  Tests: excluded (fast development)
 
@@ -11,13 +11,13 @@ Model -> API -> Hook -> Component -> Features. Start with [model/00-project-setu
 ## Progress
 - [x] Model: [model/summary.md](model/summary.md): 8 files
 - [x] API: [api/summary.md](api/summary.md): 12 files
-- [ ] Hook: [hook/summary.md](hook/summary.md): 9 files
-- [ ] Component: [component/summary.md](component/summary.md): 10 files
-- [ ] Features: [features/summary.md](features/summary.md): 14 files
+- [x] Hook: [hook/summary.md](hook/summary.md): 9 files
+- [x] Component: [component/summary.md](component/summary.md): 10 files
+- [x] Features: [features/summary.md](features/summary.md): 14 files
 
 ## How to use
-- [ ] Tick bullets while implementing, then tick `## Done` in the file
-- [ ] Tick the file in its part summary, then the part here
+- [x] Tick bullets while implementing, then tick `## Done` in the file
+- [x] Tick the file in its part summary, then the part here
 
 ## Open questions (from the plan)
 - [ ] Prototype location (Figma/images)? Add to `docs/prototype/` and re-map screens

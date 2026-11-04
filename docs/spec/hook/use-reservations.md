@@ -1,12 +1,12 @@
-# Hook: Reservations
+﻿# Hook: Reservations
 
 APIs used: [../api/reservations.md](../api/reservations.md)  |  Location: `frontend/src/features/reservations/hooks/`
 
 ## Hooks
-- [ ] `useReservations()` query `["reservations"]`
-- [ ] `useReserve()` mutation `POST /reservations`; handles OUT_OF_STOCK, RESERVATION_LIMIT; invalidates book detail
-- [ ] `useCancelReservation()` mutation
-- [ ] `useCountdown(expiresAt)` returns remaining time, flags expired
+- [x] `useReservations()` query `["reservations"]`
+- [x] `useReserve()` mutation `POST /reservations`; handles OUT_OF_STOCK, RESERVATION_LIMIT; invalidates book detail
+- [x] `useCancelReservation()` mutation
+- [x] `useCountdown(expiresAt)` returns remaining time, flags expired
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

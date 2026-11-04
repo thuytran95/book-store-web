@@ -26,6 +26,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - /app/.venv
       - media:/data/media
     depends_on:
       db:
@@ -34,6 +35,8 @@ services:
   frontend:
     build: ./frontend
     env_file: .env
+    environment:
+      API_INTERNAL_URL: http://backend:8000
     ports:
       - "3000:3000"
     volumes:
@@ -42,6 +45,27 @@ services:
       - /app/.next
     depends_on:
       - backend
+
+  backup:
+    image: postgres:16
+    environment:
+      PGHOST: db
+      PGUSER: bookstore
+      PGPASSWORD: bookstore
+      PGDATABASE: bookstore
+    volumes:
+      - ./backups:/backups
+      - ./deploy/backup.sh:/backup.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          sh /backup.sh || true
+          sleep 86400
+        done
 
 volumes:
   pgdata:

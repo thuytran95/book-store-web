@@ -20,6 +20,7 @@ class CategoryRead(BaseModel):
     id: int
     name: str
     slug: str
+    book_count: int = 0
 
 
 class BookImageRead(BaseModel):
@@ -28,6 +29,12 @@ class BookImageRead(BaseModel):
     id: int
     url: str
     position: int
+
+
+class ImageOrder(BaseModel):
+    """Permutation of a book's image ids; index is the new position."""
+
+    ids: list[int] = Field(min_length=1)
 
 
 class BookCard(BaseModel):
@@ -106,6 +113,7 @@ class BookQuery(BaseModel):
     price_max: int | None = Field(default=None, ge=0)
     condition_min: int | None = Field(default=None, ge=10, le=100)
     in_stock_only: bool = False
+    visible: bool | None = None  # admin list only; ignored on public search
     sort: BookSort = BookSort.newest
     page: int = Field(default=1, ge=1)
     size: int = Field(default=20, ge=1, le=100)

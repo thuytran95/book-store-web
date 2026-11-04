@@ -104,8 +104,16 @@ async def _available_one(session: AsyncSession, book_id: int) -> int:
 
 # ---- public ----
 
-async def list_categories(session: AsyncSession) -> list[Category]:
-    return list(await session.scalars(select(Category).order_by(Category.name)))
+async def list_categories(session: AsyncSession) -> list[CategoryRead]:
+    rows = await session.execute(
+        select(Category, func.count(Book.id))
+        .outerjoin(Book, Book.category_id == Category.id)
+        .group_by(Category.id)
+        .order_by(Category.name)
+    )
+    return [
+        CategoryRead(id=c.id, name=c.name, slug=c.slug, book_count=n or 0) for c, n in rows
+    ]
 
 
 async def search_books(session: AsyncSession, q: BookQuery) -> Page[BookCard]:

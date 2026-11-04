@@ -1,0 +1,90 @@
+# Production: nginx terminates TLS and serves /media from disk.
+# Place certs in deploy/certs/fullchain.pem and privkey.pem.
+# Checklist: strong JWT_SECRET, CORS_ORIGINS = public origin, COOKIE_SECURE=true,
+# MAIL_BACKEND=smtp with SMTP_* filled, NEXT_PUBLIC_API_URL = public origin (no /api/v1).
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bookstore
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookstore}
+      POSTGRES_DB: bookstore
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bookstore"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://bookstore:${POSTGRES_PASSWORD:-bookstore}@db:5432/bookstore
+      MEDIA_ROOT: /data/media
+      COOKIE_SECURE: "true"
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - media:/data/media
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_BANK_TRANSFER_INFO: ${BANK_TRANSFER_INFO:-}
+    env_file: .env
+    environment:
+      API_INTERNAL_URL: http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+      - media:/data/media:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  backup:
+    image: postgres:16
+    environment:
+      PGHOST: db
+      PGUSER: bookstore
+      PGPASSWORD: ${POSTGRES_PASSWORD:-bookstore}
+      PGDATABASE: bookstore
+    volumes:
+      - ./backups:/backups
+      - ./deploy/backup.sh:/backup.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          sh /backup.sh || true
+          sleep 86400
+        done
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  media:

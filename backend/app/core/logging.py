@@ -39,15 +39,21 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
         rid = request.headers.get("x-request-id") or uuid.uuid4().hex
         token = request_id_var.set(rid)
         start = time.perf_counter()
+        response = None
         try:
             response = await call_next(request)
+            return response
         finally:
             ms = round((time.perf_counter() - start) * 1000, 1)
             logger.info(
                 "request",
-                extra={"extra_fields": {"method": request.method, "path": request.url.path,
-                                        "duration_ms": ms}},
+                extra={"extra_fields": {
+                    "method": request.method,
+                    "path": request.url.path,
+                    "status": getattr(response, "status_code", 500),
+                    "duration_ms": ms,
+                }},
             )
             request_id_var.reset(token)
-        response.headers["x-request-id"] = rid
-        return response
+            if response is not None:
+                response.headers["x-request-id"] = rid

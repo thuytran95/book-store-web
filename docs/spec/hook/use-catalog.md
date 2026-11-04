@@ -1,17 +1,17 @@
-# Hook: Catalog
+﻿# Hook: Catalog
 
 APIs used: [../api/catalog.md](../api/catalog.md)  |  Location: `frontend/src/features/catalog/hooks/`
 
 ## Hooks
-- [ ] `useCategories()` query `["categories"]`
-- [ ] `useBookQuery()` reads filters from URL search params, returns `{ data, filters, setFilters, page }`
-  - [ ] Query key `["books", filters]`, endpoint `GET /books`
-  - [ ] Debounce text input
-- [ ] `useBook(slug)` query `["book", slug]`
+- [x] `useCategories()` query `["categories"]`
+- [x] `useBookQuery()` reads filters from URL search params, returns `{ data, filters, setFilters, page }`
+  - [x] Query key `["books", filters]`, endpoint `GET /books`
+  - [x] Debounce text input
+- [x] `useBook(slug)` query `["book", slug]`
 
 ## State
-- [ ] URL search params <-> `BookQuery` mapping (`lib/book-query.ts`)
-- [ ] Server-side helpers to fetch home/list/detail data in Server Components
+- [x] URL search params <-> `BookQuery` mapping (`lib/book-query.ts`)
+- [x] Server-side helpers to fetch home/list/detail data in Server Components
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete

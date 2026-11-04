@@ -1,29 +1,29 @@
-# Hook: Admin
+﻿# Hook: Admin
 
 APIs used: [../api/catalog.md](../api/catalog.md), [../api/orders.md](../api/orders.md), [../api/reservations.md](../api/reservations.md), [../api/book-requests.md](../api/book-requests.md), [../api/users.md](../api/users.md), [../api/reports.md](../api/reports.md), [../api/media.md](../api/media.md)  |  Location: `frontend/src/features/admin/hooks/`
 
 ## Books
-- [ ] `useAdminBooks(filters)`, `useAdminBook(id)`
-- [ ] `useSaveBook()` (create/update), `useDeleteBook()`, `useToggleVisible()`, `useMarkSold()`
-- [ ] `useUploadBookImage()`, `useDeleteBookImage()`
+- [x] `useAdminBooks(filters)`, `useAdminBook(id)`
+- [x] `useSaveBook()` (create/update), `useDeleteBook()`, `useToggleVisible()`, `useMarkSold()`
+- [x] `useUploadBookImage()`, `useDeleteBookImage()`, `useReorderBookImages()`
 
 ## Categories
-- [ ] `useAdminCategories()`, `useSaveCategory()`
-- [ ] `useDeleteCategory({ moveTo? })`; handles CATEGORY_NOT_EMPTY
+- [x] `useAdminCategories()`, `useSaveCategory()`
+- [x] `useDeleteCategory({ moveTo? })`; handles CATEGORY_NOT_EMPTY
 
 ## Orders
-- [ ] `useAdminOrders(status, page)`, `useAdminOrder(id)`
-- [ ] `useTransitionOrder()`; handles INVALID_TRANSITION, OUT_OF_STOCK
+- [x] `useAdminOrders(status, page)`, `useAdminOrder(id)`
+- [x] `useTransitionOrder()`; handles INVALID_TRANSITION, OUT_OF_STOCK
 
 ## Reservations and requests
-- [ ] `useAdminReservations()`, `useCancelAdminReservation()`
-- [ ] `useAdminBookRequests(status)`, `useResolveBookRequest()`
+- [x] `useAdminReservations()`, `useCancelAdminReservation()`
+- [x] `useAdminBookRequests(status)`, `useResolveBookRequest()`
 
 ## Users
-- [ ] `useAdminUsers(search, page)`, `useSetUserLocked()`
+- [x] `useAdminUsers(search, page)`, `useSetUserLocked()`
 
 ## Reports
-- [ ] `useRevenue(granularity, range)`, `useSummary()`, `useBestSellers()`, `useLowStock()`
+- [x] `useRevenue(granularity, range)`, `useSummary()`, `useBestSellers()`, `useLowStock()`
 
 ## Done
-- [ ] All bullets above complete
+- [x] All bullets above complete
