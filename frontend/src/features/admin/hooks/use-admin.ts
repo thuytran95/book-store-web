@@ -20,12 +20,23 @@ const invalidate = (qc: ReturnType<typeof useQueryClient>, ...keys: string[]) =>
 export type AdminBookFilters = {
   text?: string;
   category?: string;
+  condition_min?: number;
   in_stock?: boolean;
   visible?: boolean;
   sort?: S["BookSort"];
   page?: number;
   size?: number;
 };
+
+export function useInventoryOverview() {
+  return useQuery({
+    queryKey: ["admin", "inventory", "overview"],
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/inventory/overview");
+      return data!;
+    },
+  });
+}
 
 export function useAdminBooks(filters: AdminBookFilters = {}) {
   return useQuery({
@@ -66,7 +77,11 @@ export function useSaveBook() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "books", "book"),
+    onSuccess: () =>
+      Promise.all([
+        invalidate(qc, "admin", "books", "book"),
+        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+      ]),
   });
 }
 
@@ -80,7 +95,11 @@ export function useDeleteBook() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "books", "book"),
+    onSuccess: () =>
+      Promise.all([
+        invalidate(qc, "admin", "books", "book"),
+        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+      ]),
   });
 }
 
@@ -94,7 +113,11 @@ export function useToggleVisible() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "books", "book"),
+    onSuccess: () =>
+      Promise.all([
+        invalidate(qc, "admin", "books", "book"),
+        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+      ]),
   });
 }
 
@@ -107,7 +130,11 @@ export function useMarkSold() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "books", "book"),
+    onSuccess: () =>
+      Promise.all([
+        invalidate(qc, "admin", "books", "book"),
+        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+      ]),
   });
 }
 

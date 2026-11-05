@@ -681,6 +681,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/inventory/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["overview_api_v1_admin_inventory_overview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/reports/summary": {
         parameters: {
             query?: never;
@@ -997,7 +1013,7 @@ export interface components {
          * BookSort
          * @enum {string}
          */
-        BookSort: "newest" | "price_asc" | "price_desc" | "relevance";
+        BookSort: "newest" | "price_asc" | "price_desc" | "relevance" | "title_asc" | "condition_desc";
         /**
          * BookUpdate
          * @description Quantity is intentionally absent: stock changes go through `inventory`.
@@ -1214,6 +1230,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** InventoryOverview */
+        InventoryOverview: {
+            total_copies: number;
+            total_titles: number;
+            category_count: number;
+            categorized_pct: number;
+            estimated_stock_value: number;
+            good_condition_copies: number;
+            good_condition_pct: number;
+            intake_this_week: number;
         };
         /** OrderSummaryReport */
         OrderSummaryReport: {
@@ -3336,6 +3363,35 @@ export interface operations {
                 };
             };
             /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    overview_api_v1_admin_inventory_overview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventoryOverview"];
+                };
+            };
             422: {
                 headers: {
                     [name: string]: unknown;

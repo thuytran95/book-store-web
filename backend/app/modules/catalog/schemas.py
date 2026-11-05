@@ -104,6 +104,8 @@ class BookSort(str, Enum):
     price_asc = "price_asc"
     price_desc = "price_desc"
     relevance = "relevance"
+    title_asc = "title_asc"
+    condition_desc = "condition_desc"
 
 
 class BookQuery(BaseModel):

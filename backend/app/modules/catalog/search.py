@@ -72,9 +72,13 @@ async def search_books(
     total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
 
     if q.sort == BookSort.price_asc:
-        order = [Book.sale_price.asc(), Book.id.desc()]
+        order = [Book.sale_price.asc(), Book.id.asc()]
     elif q.sort == BookSort.price_desc:
         order = [Book.sale_price.desc(), Book.id.desc()]
+    elif q.sort == BookSort.title_asc:
+        order = [_unaccent(Book.title).asc(), Book.id.asc()]
+    elif q.sort == BookSort.condition_desc:
+        order = [Book.condition_pct.desc(), Book.id.desc()]
     elif q.sort == BookSort.relevance and rank is not None:
         order = [rank.desc(), Book.id.desc()]
     else:

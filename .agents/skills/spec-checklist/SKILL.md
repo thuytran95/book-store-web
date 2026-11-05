@@ -1,6 +1,6 @@
 ---
 name: spec-checklist
-description: Turn a requirement or plan (e.g. docs/PLAN-codebase.md) into per-part implementation checklists in a new docs/spec/<task-slug>/ folder named from the task, split into model, api, hook, features and component, plus a summary.md overview. Use whenever the user asks to analyse requirements, break a plan into tasks, write a spec or checklist, "split into model/api/hook/feature/component", or prepare work for fast implementation, even if they don't say "checklist". Tests are intentionally excluded. Optionally follows a UI prototype.
+description: Turn a requirement or plan (e.g. the business outline in docs/ or a request from the user) into per-part implementation checklists in a new docs/spec/<task-slug>/ folder named from the task, split into model, api, hook, features and component, plus a summary.md overview. Use whenever the user asks to analyse requirements, break a plan into tasks, write a spec or checklist, "split into model/api/hook/feature/component", or prepare work for fast implementation, even if they don't say "checklist". Tests are intentionally excluded. Optionally follows a UI prototype.
 ---
 
 # Spec Checklist
@@ -17,11 +17,13 @@ Analyse a requirement source and produce small, tickable spec files, one per imp
 
 ## Workflow
 
-- [ ] 1. **Read the source** (default `docs/PLAN-codebase.md`). Extract entities, endpoints, screens, business rules, and the stack.
+- [ ] 1. **Read the architecture.**
+  - [ ] a. Architecture: read `docs/architecture/backend.md` (modules, tables, endpoints, domain rules, migrations) and `docs/architecture/frontend.md` (routes, features, api clients, hooks, forms, styling). Use them for the stack, file paths and conventions in every bullet.
+  - [ ] b. Reuse what exists: if a table, endpoint, hook or component in the architecture docs already covers part of the requirement, write a "change/extend" bullet for it instead of creating a new one.
 - [ ] 2. **Ask about the prototype** (optional). Record the answer in `summary.md`.
 - [ ] 3. **Create a new task folder** `docs/spec/<task-slug>/` from the task content (see Output layout). Never write into `docs/spec/` root or into another task's folder.
 - [ ] 4. **Split the work** into the five parts below. One folder per part, one file per module/entity/screen inside it (use the templates in `references/`).
-- [ ] 5. **Write `summary.md`** at the task-folder root, plus a `summary.md` inside each part folder (templates in `references/summary.md`).
+- [ ] 5. **Write one `summary.md`** at the task-folder root only (template in `references/summary.md`). It lists every part's files with a checkbox each. Do **not** create a `summary.md` inside part folders.
 - [ ] 6. **Cross-check**: every entity has a model file, every model has an api file, every api used by the UI has a hook, every screen has a feature and its components. Fix gaps.
 - [ ] 7. **Report** to the user: task folder path, files created, open questions.
 
@@ -51,12 +53,12 @@ Each generate run creates **one new folder** for that task. Several tasks can li
 ```
 docs/spec/
 ├── landing-page/             # one folder per task
-│   ├── summary.md
-│   ├── model/   summary.md + <entity>.md ...
-│   ├── api/     summary.md + <module>.md ...
-│   ├── hook/    summary.md + <area>.md ...
-│   ├── features/summary.md + <flow>.md ...
-│   └── component/ summary.md + <component>.md ...
+│   ├── summary.md            # the only summary: all parts and their files
+│   ├── model/      <entity>.md ...
+│   ├── api/        <module>.md ...
+│   ├── hook/       <area>.md ...
+│   ├── features/   <flow>.md ...
+│   └── component/  <component>.md ...
 └── checkout/                 # another task, same shape
     └── ...
 ```
@@ -79,10 +81,10 @@ Do not use a generic slug like `spec`, `checklist`, or `task`. Do not write file
 - [ ] Link to dependencies with relative links (e.g. `../model/order.md`).
 - [ ] Mark scope: if the plan says "out of scope (v1)", do not create items for it.
 
-## Summary files
+## Summary file
 
-See `references/summary.md`. The task-folder `summary.md` gives the overview and a progress table (one checkbox per part and per file). Each part summary lists its files with a one-line purpose, dependency order, and a checkbox per file.
+See `references/summary.md`. The task-folder `summary.md` is the single summary: overview, then one section per part listing its files (one-line purpose, dependencies, a checkbox each, in dependency order).
 
 ## After generating
 
-- [ ] Tell the user the task folder path (`docs/spec/<task-slug>/`) and how to work: tick bullets while implementing, tick `## Done`, then tick the file in its part `summary.md`, then the part in that task folder's `summary.md`.
+- [ ] Tell the user the task folder path (`docs/spec/<task-slug>/`) and how to work: tick bullets while implementing, tick `## Done`, then tick the file in the task folder's `summary.md`.

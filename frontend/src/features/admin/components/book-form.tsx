@@ -16,7 +16,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { applyServerErrors } from "@/lib/forms";
 import { toast } from "@/lib/toast";
 import { bookSchema, type BookForm as Values } from "@/lib/validation/book";
-import { useAdminBook, useAdminCategories, useSaveBook } from "../hooks/use-admin";
+import {
+  useAdminBook,
+  useAdminCategories,
+  useSaveBook,
+} from "../hooks/use-admin";
 import { ImageUploader } from "./image-uploader";
 
 const EMPTY: Values = {
@@ -97,21 +101,35 @@ export function BookForm({ bookId }: { bookId?: number }) {
           );
         })}
       >
-        <FormField label="Tiêu đề" required error={formState.errors.title?.message}>
+        <FormField
+          label="Tên sách"
+          required
+          error={formState.errors.title?.message}
+        >
           <Input {...register("title")} />
         </FormField>
         <FormField label="Tác giả" error={formState.errors.author?.message}>
           <Input {...register("author")} />
         </FormField>
         <div className="grid gap-3 sm:grid-cols-2">
-          <FormField label="Nhà xuất bản" error={formState.errors.publisher?.message}>
+          <FormField
+            label="Nhà xuất bản"
+            error={formState.errors.publisher?.message}
+          >
             <Input {...register("publisher")} />
           </FormField>
-          <FormField label="Năm xuất bản" error={formState.errors.published_year?.message}>
+          <FormField
+            label="Năm xuất bản"
+            error={formState.errors.published_year?.message}
+          >
             <Input type="number" {...register("published_year")} />
           </FormField>
         </div>
-        <FormField label="Danh mục" required error={formState.errors.category_id?.message}>
+        <FormField
+          label="Danh mục"
+          required
+          error={formState.errors.category_id?.message}
+        >
           <NativeSelect {...register("category_id", { valueAsNumber: true })}>
             <option value={0}>Chọn danh mục</option>
             {categories.map((c) => (
@@ -122,18 +140,49 @@ export function BookForm({ bookId }: { bookId?: number }) {
           </NativeSelect>
         </FormField>
         <div className="grid gap-3 sm:grid-cols-3">
-          <FormField label="Giá vốn (đ)" error={formState.errors.cost_price?.message}>
-            <Input type="number" min={0} step={1000} {...register("cost_price")} />
+          <FormField
+            label="Giá vốn (đ)"
+            error={formState.errors.cost_price?.message}
+          >
+            <Input
+              type="number"
+              min={0}
+              step={1000}
+              {...register("cost_price")}
+            />
           </FormField>
-          <FormField label="Giá bán (đ)" required error={formState.errors.sale_price?.message}>
-            <Input type="number" min={0} step={1000} {...register("sale_price")} />
+          <FormField
+            label="Giá bán (đ)"
+            required
+            error={formState.errors.sale_price?.message}
+          >
+            <Input
+              type="number"
+              min={0}
+              step={1000}
+              {...register("sale_price")}
+            />
           </FormField>
-          <FormField label="Tình trạng (%)" required error={formState.errors.condition_pct?.message}>
-            <Input type="number" min={10} max={100} {...register("condition_pct")} />
+          <FormField
+            label="Tình trạng (%)"
+            required
+            error={formState.errors.condition_pct?.message}
+          >
+            <Input
+              type="number"
+              min={10}
+              max={100}
+              {...register("condition_pct")}
+            />
           </FormField>
         </div>
         {isNew && (
-          <FormField label="Số lượng" required hint="Sau khi tạo, kho chỉ đổi qua đánh dấu bán / đơn hàng." error={formState.errors.quantity?.message}>
+          <FormField
+            label="Số lượng"
+            required
+            hint="Sau khi tạo, kho chỉ đổi qua đánh dấu bán / đơn hàng."
+            error={formState.errors.quantity?.message}
+          >
             <Input type="number" min={0} {...register("quantity")} />
           </FormField>
         )}
@@ -155,7 +204,11 @@ export function BookForm({ bookId }: { bookId?: number }) {
           )}
         />
         <ErrorMessage error={save.error} />
-        <Button type="submit" className="justify-self-start" disabled={save.isPending}>
+        <Button
+          type="submit"
+          className="justify-self-start"
+          disabled={save.isPending}
+        >
           {isNew ? "Tạo sách" : "Lưu thay đổi"}
         </Button>
       </form>

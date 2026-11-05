@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Dashboard } from "@/features/admin/components/dashboard";
+import { InventoryHome } from "@/features/admin/components/inventory-home";
 
-export const metadata: Metadata = { title: "Tổng quan quản trị" };
+export const metadata: Metadata = { title: "Quản lý sách" };
 
 export default function AdminHomePage() {
-  return <Dashboard />;
+  return <InventoryHome />;
 }

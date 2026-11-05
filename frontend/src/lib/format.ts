@@ -67,3 +67,34 @@ const REQUEST_LABEL: Record<BookRequestStatus, string> = {
 };
 
 export const requestStatusLabel = (s: BookRequestStatus): string => REQUEST_LABEL[s];
+
+/** Admin stock code shown in inventory UI (until a dedicated column exists). */
+export function formatStockCode(bookId: number): string {
+  return `MS-${String(bookId).padStart(5, "0")}`;
+}
+
+export type ConditionBand = "mint" | "good" | "fair" | "vintage";
+
+export function conditionBand(pct: number): ConditionBand {
+  if (pct >= 95) return "mint";
+  if (pct >= 80) return "good";
+  if (pct >= 60) return "fair";
+  return "vintage";
+}
+
+const BAND_LABEL: Record<ConditionBand, string> = {
+  mint: "Rất mới",
+  good: "Tốt",
+  fair: "Khá",
+  vintage: "Hiếm",
+};
+
+/** Prototype-style label including percentage, e.g. "Tốt (85%)". */
+export function conditionBandLabel(pct: number): string {
+  const band = conditionBand(pct);
+  return `${BAND_LABEL[band]} (${pct}%)`;
+}
+
+export function formatCompactCount(n: number): string {
+  return new Intl.NumberFormat("vi-VN").format(n);
+}

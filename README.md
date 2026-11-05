@@ -185,6 +185,5 @@ Production: dùng `docker-compose.prod.yml` (nginx + TLS). Checklist nằm cuố
 
 ## Tài liệu thêm
 
-- [docs/PLAN-codebase.md](docs/PLAN-codebase.md) — kế hoạch kỹ thuật
-- [docs/spec/summary.md](docs/spec/summary.md) — checklist triển khai
+- [docs/spec/](docs/spec/) — checklist triển khai theo từng task
 - [docs/Outline hệ thống quản lý và bán sách cũ.md](docs/Outline%20hệ%20thống%20quản%20lý%20và%20bán%20sách%20cũ.md) — yêu cầu nghiệp vụ

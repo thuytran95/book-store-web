@@ -20,6 +20,7 @@ from app.modules.catalog.router import router as catalog_router
 from app.modules.media.router import router as media_router
 from app.modules.orders.admin_router import router as orders_admin_router
 from app.modules.orders.router import router as orders_router
+from app.modules.reports.inventory_router import router as inventory_router
 from app.modules.reports.router import router as reports_router
 from app.modules.reservations.admin_router import router as reservations_admin_router
 from app.modules.reservations.router import router as reservations_router
@@ -69,6 +70,7 @@ def create_app() -> FastAPI:
         reservations_router, reservations_admin_router,
         book_requests_router, book_requests_admin_router,
         reports_router,
+        inventory_router,
     ):
         api.include_router(router)
     app.include_router(api)
