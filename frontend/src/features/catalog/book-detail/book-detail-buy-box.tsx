@@ -1,7 +1,6 @@
 "use client";
 
 import { Clock, Minus, Plus, ShoppingCart } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,7 @@ import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { pdpPillButtonPrimary, pdpPillButtonSecondary, pdpSurface } from "./pdp-styles";
+import { LinkButton } from "@/components/shared/link-button";
 
 export function BookDetailBuyBox({
   bookId,
@@ -47,9 +47,9 @@ export function BookDetailBuyBox({
     return (
       <aside className={cn(pdpSurface(), "space-y-3 p-5 lg:sticky lg:top-44")}>
         <p className="text-sm font-medium text-destructive">Sách này đã hết hàng.</p>
-        <Button render={<Link href={`/book-requests?title=${encodeURIComponent(title)}`} />} className="w-full">
+        <LinkButton href={`/book-requests?title=${encodeURIComponent(title)}`} className="w-full">
           Yêu cầu tìm cuốn này
-        </Button>
+        </LinkButton>
       </aside>
     );
   }

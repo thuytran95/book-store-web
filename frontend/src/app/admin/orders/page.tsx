@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OrdersTable } from "@/features/admin/components/orders-table";
+import { OrdersTable } from "@/features/admin/components/order/orders-table";
 
 export const metadata: Metadata = { title: "Đơn hàng" };
 

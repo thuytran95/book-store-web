@@ -21,7 +21,8 @@ import {
   useMarkSold,
   useToggleVisible,
   type AdminBookFilters,
-} from "../hooks/use-admin";
+} from "../../hooks/use-admin";
+import { LinkButton } from "@/components/shared/link-button";
 
 type Target = { id: number; title: string; kind: "delete" | "sold" };
 
@@ -54,7 +55,7 @@ export function BooksTable() {
     <div className="grid gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-bold">Sách</h1>
-        <Button render={<Link href="/admin/books/new" />}>Thêm sách</Button>
+        <LinkButton href="/admin/books/new">Thêm sách</LinkButton>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -70,7 +71,7 @@ export function BooksTable() {
           }}
         />
         <NativeSelect
-          aria-label="Danh mục"
+          aria-label="Thể loại"
           className="w-48"
           value={category}
           onChange={(e) => {
@@ -78,7 +79,7 @@ export function BooksTable() {
             setPage(1);
           }}
         >
-          <option value="">Tất cả danh mục</option>
+          <option value="">Tất cả thể loại</option>
           {categories.map((c) => (
             <option key={c.id} value={c.slug}>
               {c.name}
@@ -105,13 +106,13 @@ export function BooksTable() {
       ) : error ? (
         <ErrorMessage error={error} />
       ) : !data?.items.length ? (
-        <EmptyState title="Không có sách" action={<Button render={<Link href="/admin/books/new" />}>Thêm sách</Button>} />
+        <EmptyState title="Không có sách" action={<LinkButton href="/admin/books/new">Thêm sách</LinkButton>} />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Sách</TableHead>
-              <TableHead>Danh mục</TableHead>
+              <TableHead>Thể loại</TableHead>
               <TableHead>Giá</TableHead>
               <TableHead>Kho</TableHead>
               <TableHead>Trạng thái</TableHead>
@@ -142,9 +143,9 @@ export function BooksTable() {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap justify-end gap-1">
-                    <Button size="xs" variant="outline" render={<Link href={`/admin/books/${b.id}`} />}>
+                    <LinkButton href={`/admin/books/${b.id}`} size="sm" variant="outline">
                       Sửa
-                    </Button>
+                    </LinkButton>
                     <Button
                       size="xs"
                       variant="ghost"

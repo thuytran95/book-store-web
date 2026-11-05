@@ -20,7 +20,7 @@ import {
   useAdminBook,
   useAdminCategories,
   useSaveBook,
-} from "../hooks/use-admin";
+} from "../../hooks/use-admin";
 import { ImageUploader } from "./image-uploader";
 
 const EMPTY: Values = {
@@ -126,12 +126,12 @@ export function BookForm({ bookId }: { bookId?: number }) {
           </FormField>
         </div>
         <FormField
-          label="Danh mục"
+          label="Thể loại"
           required
           error={formState.errors.category_id?.message}
         >
           <NativeSelect {...register("category_id", { valueAsNumber: true })}>
-            <option value={0}>Chọn danh mục</option>
+            <option value={0}>Chọn thể loại</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}

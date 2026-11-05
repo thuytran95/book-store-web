@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { UsersPage } from "@/features/admin/components/users-page";
+import { UsersPage } from "@/features/admin/components/user/users-page";
 
 export const metadata: Metadata = { title: "Người dùng" };
 

@@ -12,7 +12,7 @@ import { TrustPillars } from "@/features/home/components/trust-pillars";
 const slide = homeContent.heroSlides[0];
 
 export const metadata: Metadata = {
-  title: "Sách Xưa & Nay - Hiệu Sách Di Sản & Sưu Tầm",
+  title: "Sách Xưa & Nay - Hiệu sách di sản & sưu tầm",
   description: slide.description,
 };
 

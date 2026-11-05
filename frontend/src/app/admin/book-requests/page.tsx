@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AdminBookRequestsPage } from "@/features/admin/components/book-requests-page";
+import { AdminBookRequestsPage } from "@/features/admin/components/book-request/book-requests-page";
 
 export const metadata: Metadata = { title: "Yêu cầu tìm sách" };
 

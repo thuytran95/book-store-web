@@ -30,7 +30,7 @@ export function HomeSecondaryNav() {
               render={
                 <Button className="rounded-t-lg rounded-b-none bg-primary shadow-sm hover:bg-primary-container">
                   <MaterialIcon name="menu" className="text-lg" />
-                  Danh Mục Thể Loại
+                  Thể loại sách
                   <MaterialIcon name="expand_more" className="text-base" />
                 </Button>
               }

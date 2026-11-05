@@ -1,7 +1,6 @@
 "use client";
 
 import { LogOut, User } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLogout } from "@/features/auth/hooks";
 import { useSession } from "@/lib/session";
+import { LinkButton } from "@/components/shared/link-button";
 
 export function UserMenu() {
   const { session, isLoading } = useSession();
@@ -23,12 +23,12 @@ export function UserMenu() {
   if (!session) {
     return (
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm" render={<Link href="/login" />}>
+        <LinkButton href="/login" variant="outline" size="sm">
           Đăng nhập
-        </Button>
-        <Button size="sm" className="hidden sm:inline-flex" render={<Link href="/register" />}>
+        </LinkButton>
+        <LinkButton href="/register" size="sm" className="hidden sm:inline-flex">
           Đăng ký
-        </Button>
+        </LinkButton>
       </div>
     );
   }

@@ -23,6 +23,7 @@ import {
   type RegisterForm as RegisterValues,
 } from "../hooks";
 import { z } from "zod";
+import { LinkButton } from "@/components/shared/link-button";
 
 function Title({ children, sub }: { children: React.ReactNode; sub?: string }) {
   return (
@@ -191,7 +192,7 @@ export function ResetPasswordForm() {
     return (
       <>
         <Title>Đã đặt lại mật khẩu</Title>
-        <Button render={<Link href="/login" />}>Đăng nhập</Button>
+        <LinkButton href="/login">Đăng nhập</LinkButton>
       </>
     );
   }

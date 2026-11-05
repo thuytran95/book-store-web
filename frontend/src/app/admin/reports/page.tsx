@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Dashboard } from "@/features/admin/components/dashboard";
+import { Dashboard } from "@/features/admin/components/report/dashboard";
 
 export const metadata: Metadata = { title: "Báo cáo & thống kê" };
 

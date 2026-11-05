@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/error-messages";
 import type { components } from "@/lib/api/schema";
 import { cn } from "@/lib/utils";
-import { useDeleteBookImage, useReorderBookImages, useUploadBookImage } from "../hooks/use-admin";
+import { useDeleteBookImage, useReorderBookImages, useUploadBookImage } from "../../hooks/use-admin";
 
 type BookImage = components["schemas"]["BookImageRead"];
 

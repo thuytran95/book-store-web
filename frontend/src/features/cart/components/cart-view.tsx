@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/lib/session";
 import { useCart } from "../hooks/use-cart";
 import { CartLine } from "./cart-line";
+import { LinkButton } from "@/components/shared/link-button";
 
 export function CartView() {
   const { session, isLoading: sessionLoading } = useSession();
@@ -18,7 +19,7 @@ export function CartView() {
     return (
       <EmptyState
         title="Đăng nhập để xem giỏ hàng"
-        action={<Button render={<Link href="/login?next=/cart" />}>Đăng nhập</Button>}
+        action={<LinkButton href="/login?next=/cart">Đăng nhập</LinkButton>}
       />
     );
   }
@@ -27,7 +28,7 @@ export function CartView() {
       <EmptyState
         title="Giỏ hàng trống"
         description="Hãy chọn vài cuốn sách bạn thích."
-        action={<Button render={<Link href="/books" />}>Xem sách</Button>}
+        action={<LinkButton href="/books">Xem sách</LinkButton>}
       />
     );
   }

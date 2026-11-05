@@ -23,7 +23,7 @@ export const PDP_STATIC = {
     "Tránh ánh nắng trực tiếp; đọc bằng ánh sáng dịu.",
   ],
   reviewsSection: {
-    title: "Đánh Giá & Cảm Nhận Từ Nhà Sưu Tầm",
+    title: "Đánh giá & cảm nhận từ nhà sưu tầm",
     subtitle: "Mẫu giao diện — đánh giá thực sẽ có sau",
     average: "5.0",
     satisfaction: "100% người mua hài lòng tuyệt đối (mẫu)",

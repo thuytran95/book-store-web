@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { components } from "@/lib/api/schema";
 import { formatVnd, orderStatusLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useBestSellers, useLowStock, useRevenue, useSummary } from "../hooks/use-admin";
+import { useBestSellers, useLowStock, useRevenue, useSummary } from "../../hooks/use-admin";
 
 type Granularity = components["schemas"]["Granularity"];
 

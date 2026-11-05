@@ -15,7 +15,7 @@ import { hasCode } from "@/lib/api/errors";
 import { errorMessage } from "@/lib/error-messages";
 import { formatDate, requestStatusLabel } from "@/lib/format";
 import { toast } from "@/lib/toast";
-import { useAdminBookRequests, useResolveBookRequest } from "../hooks/use-admin";
+import { useAdminBookRequests, useResolveBookRequest } from "../../hooks/use-admin";
 
 type Status = components["schemas"]["BookRequestStatus"];
 type Row = components["schemas"]["BookRequestRead"];

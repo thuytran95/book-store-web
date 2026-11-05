@@ -13,10 +13,10 @@ import { formatCompactCount } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const PRIMARY_LINKS = [
-  { href: "/admin", label: "Kho Sách", icon: "inventory_2", exact: true },
-  { href: "/admin/categories", label: "Thể Loại Sách", icon: "account_tree" },
+  { href: "/admin", label: "Quản lý sách", icon: "inventory_2", exact: true },
+  { href: "/admin/categories", label: "Thể loại sách", icon: "account_tree" },
   { href: "/admin/books/new", label: "Thêm sách", icon: "post_add" },
-  { href: "/admin/reports", label: "Báo Cáo & Thống Kê", icon: "monitoring" },
+  { href: "/admin/reports", label: "Báo cáo & thống kê", icon: "monitoring" },
 ] as const;
 
 const EXTRA_LINKS = [
@@ -47,7 +47,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
                 Sách Xưa & Nay
               </span>
               <span className="text-label-sm text-on-surface-variant">
-                Hiệu Sách Di Sản
+                Hiệu sách di sản
               </span>
             </div>
           </div>
@@ -71,7 +71,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <div className="rounded-lg bg-surface-container-low p-space-md shadow-[0_2px_8px_rgba(27,77,62,0.04)]">
           <div className="mb-space-xs flex items-center justify-between">
             <span className="text-label-md font-semibold text-on-surface">
-              Trạng Thái Kho
+              Trạng thái kho
             </span>
             <span className="inline-flex items-center rounded-full bg-secondary-container px-space-xs py-0.5 text-label-sm text-on-secondary-container">
               Hoạt động
@@ -240,7 +240,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="min-h-screen w-full bg-background px-20 pt-32 pb-10">
+        <main className="min-h-screen w-full bg-background px-10 pt-32 pb-10">
           {children}
         </main>
       </div>

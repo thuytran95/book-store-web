@@ -7,9 +7,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { formatDate, paymentLabel } from "@/lib/format";
 import { useOrders } from "../hooks/use-orders";
+import { LinkButton } from "@/components/shared/link-button";
 
 export function OrderList() {
   const [page, setPage] = useState(1);
@@ -23,7 +23,7 @@ export function OrderList() {
       <EmptyState
         title="Bạn chưa có đơn hàng nào"
         description="Khi đặt hàng, đơn sẽ hiện ở đây."
-        action={<Button render={<Link href="/books" />}>Xem sách</Button>}
+        action={<LinkButton href="/books">Xem sách</LinkButton>}
       />
     );
   }

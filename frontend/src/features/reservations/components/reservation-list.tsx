@@ -12,6 +12,7 @@ import { formatDate, reservationStatusLabel } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { useCancelReservation, useCountdown, useReservations, type Reservation } from "../hooks/use-reservations";
+import { LinkButton } from "@/components/shared/link-button";
 
 function CountdownText({ expiresAt }: { expiresAt: string }) {
   const c = useCountdown(expiresAt);
@@ -56,9 +57,9 @@ function Row({ r, onCancel }: { r: Reservation; onCancel: (r: Reservation) => vo
       <div className="flex gap-2">
         {r.status === "active" && !expired && (
           <>
-            <Button size="sm" render={<Link href={`/checkout?reservation=${r.id}`} />}>
+            <LinkButton href={`/checkout?reservation=${r.id}`} size="sm">
               Mua ngay
-            </Button>
+            </LinkButton>
             <Button size="sm" variant="outline" onClick={() => onCancel(r)}>
               Huỷ giữ
             </Button>
@@ -81,7 +82,7 @@ export function ReservationList() {
       <EmptyState
         title="Bạn chưa giữ cuốn sách nào"
         description="Giữ sách khi chưa sẵn sàng mua ngay. Mỗi lượt giữ có hạn."
-        action={<Button render={<Link href="/books" />}>Xem sách</Button>}
+        action={<LinkButton href="/books">Xem sách</LinkButton>}
       />
     );
   }

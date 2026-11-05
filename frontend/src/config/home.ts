@@ -68,8 +68,8 @@ export type SocialLink = { label: string; href: string; abbrev: string };
 export const homeContent = {
   brand: {
     name: "Sách Xưa & Nay",
-    tagline: "Hiệu Sách Di Sản & Cổ Thư",
-    footerTagline: "Di Sản & Cổ Thư Việt Nam",
+    tagline: "Hiệu sách di sản & cổ thư",
+    footerTagline: "Di sản & cổ thư Việt Nam",
     blurb:
       "Thành lập từ 2012, là không gian lưu giữ, lan tỏa và thẩm định các ấn bản sách cổ, văn học tiền chiến, bản dịch thời kỳ đổi mới và thủ bản văn hiến của người Việt.",
   },
@@ -77,23 +77,23 @@ export const homeContent = {
     address: "45 Phố Hàng Bạc, Hoàn Kiếm, Hà Nội",
     addressShort: "45 Hàng Bạc, Hoàn Kiếm, Hà Nội",
     hours: "8:30 - 21:30",
-    hoursLong: "Thứ Hai - Chủ Nhật: 8:00 - 21:30",
+    hoursLong: "Thứ hai - Chủ nhật: 8:00 - 21:30",
     topbarHours: "8:30 - 21:30 (Thứ 2 - CN)",
     hotline: "0912.345.678",
-    trustBadge: "100% Ảnh Thật Từng Trang & Có Thẩm Định",
+    trustBadge: "100% ảnh thật từng trang & có thẩm định",
     zaloNote: "Hỗ trợ hình ảnh chi tiết từng trang qua Zalo",
   },
   heroSlides: [
     {
-      eyebrow: "Ưu Đãi & Tuyển Tập Đặc Biệt 2024",
-      titleBefore: "Bản In Thập Niên ",
+      eyebrow: "Ưu đãi & tuyển tập đặc biệt 2024",
+      titleBefore: "Bản in thập niên ",
       titleHighlight: "1930 - 1975",
-      titleAfter: " & Trọn Bộ Tác Phẩm Kinh Điển",
+      titleAfter: " & trọn bộ tác phẩm kinh điển",
       description:
         "Kho lưu trữ hơn 15.000 đầu sách văn học tiền chiến, bản in đầu tiên, sách dịch Liên Xô Cầu Vồng và tài liệu văn hiến nguyên vẹn từng trang giấy ngả vàng của người Việt.",
-      primaryCta: { label: "Khám Phá Bộ Sưu Tập", href: "/#kho-sach" },
+      primaryCta: { label: "Khám phá bộ sưu tập", href: "/#kho-sach" },
       secondaryCta: {
-        label: "Ghé Thăm Tiệm 45 Hàng Bạc",
+        label: "Ghé thăm tiệm 45 Hàng Bạc",
         href: "/#khong-gian",
       },
       priceTeaser: {
@@ -111,13 +111,13 @@ export const homeContent = {
           imageUrl:
             "https://lh3.googleusercontent.com/aida-public/AB6AXuC-XYD_TlwQMRD5JLm_A5Kb6O-4rqvVm1B2-8ivLaKnJHZ468CGxBu5AFBSiTiwrIeeYAg3UDgPr7XZ8jPIA6kMDLFwb2T0_QKmyYv_7Rgeif1sNdTEoEmlFOMceMVFPqSZe7XxZizAgEnG3ELxEDwOfGNZdLe8TvVdGrYavjINUWymDFPa9sLFTTVPC6hda8y40am5-XvwnuDQHp6jKACBvg4slUIHAln1zLeZxjBJDdYR1ht6Brvghg",
           alt: "Dế Mèn Phiêu Lưu Ký",
-          badge: "Đặc Biệt",
+          badge: "Đặc biệt",
         },
         {
           imageUrl:
             "https://lh3.googleusercontent.com/aida-public/AB6AXuAjiYmJp1Ufeu9tmXKa6i4buCIAXeRnr5PIoTDJ8pDMxIK9nm-cADO7iDEz-vxQe6O4weFBI0lshwldqKinUgDgzBsaB1p4sJDovTmwbSn3KIF0y2R7fw_tkE9OszqvdBdE56Ap-37gEnGSF844V-UTXzJEoIiCNVvL7ZJE0SFNxzeAojdWzZnVVm4Q3SZhYsrppXrHF_6p4FawkU3DfF2mZUx5R3dJmcTwb-r53NbryX6WA1BX5j8uFw",
           alt: "Nỗi Buồn Chiến Tranh Bảo Ninh",
-          badge: "Bản Đầu 1991",
+          badge: "Bản đầu 1991",
         },
       ],
     },
@@ -125,45 +125,45 @@ export const homeContent = {
   trustPillars: [
     {
       icon: "verified_user",
-      title: "Thẩm Định Thật 100%",
+      title: "Thẩm định thật 100%",
       subtitle: "Giám định niên đại & ruột trang kỹ lưỡng",
     },
     {
       icon: "inventory_2",
-      title: "Đóng Gói 3 Lớp Chống Sốc",
+      title: "Đóng gói 3 lớp chống sốc",
       subtitle: "Bọc xốp 4 góc, màng co kháng ẩm tối đa",
     },
     {
       icon: "auto_stories",
-      title: "Kho 15.000+ Đầu Sách",
+      title: "Kho 15.000+ đầu sách",
       subtitle: "Sách lưu trữ sẵn sàng đóng gửi ngay",
     },
     {
       icon: "change_circle",
-      title: "Bảo Hành Đổi Trả 7 Ngày",
+      title: "Bảo hành đổi trả 7 ngày",
       subtitle: "Hoàn tiền nếu sai lệch mô tả ban đầu",
     },
   ] satisfies TrustPillar[],
   promoBanners: [
     {
       variant: "orange",
-      eyebrow: "Giảm Đến 25%",
-      title: "Bản In Xưa Cuối Tuần",
+      eyebrow: "Giảm đến 25%",
+      title: "Bản in xưa cuối tuần",
       body: "Tuyển tập dịch thuật văn học Nga, Pháp & tiểu thuyết kinh điển trước năm 1990.",
-      cta: { label: "Xem Ngay", href: "/books?sort=newest" },
+      cta: { label: "Xem ngay", href: "/books?sort=newest" },
       coverImageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuDU5zXGB8xGZOnLuz1lWth2dR9NbIH2mfZodXVelEWowGpmkUvpPegObgwmEuB542XM9XM2k4V-k0GxQ91zhyg-HGakbjPa5JxmAJs_Wy9RDTkOUq-uEP8rxyyzxDdZsEm-T57rUne8GSkUvGeLSjR14QmYkQpmEFYj6zHXYNzj2Dl6l41DGEE3WsH8BqbIVRTyyK8JSCrLQmLbS0OCMkeZpzlQSnR3ysC7z2brcXqy3Rp-s_4xBOrZrA",
-      coverAlt: "Sách Văn Học Nga",
+      coverAlt: "Sách văn học Nga",
     },
     {
       variant: "amber",
-      eyebrow: "Đặc Tuyển Sưu Tầm",
-      title: "Bộ Sưu Tập Giấy Dép & Bìa Gốc",
+      eyebrow: "Đặc tuyển sưu tầm",
+      title: "Bộ sưu tập giấy dép & bìa gốc",
       body: "Sách nghiên cứu văn hóa, địa chí ba miền & thủ tịch triều Nguyễn in mộc bản.",
-      cta: { label: "Khám Phá Kệ Sách", href: "/books?sort=price_desc" },
+      cta: { label: "Khám phá kệ sách", href: "/books?sort=price_desc" },
       coverImageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCB9F03KbWQwS6_WsbWW4rkNvejbFU3QMjZT7XENLPwLJ1GiQxIVcJr8f1M0OU3N-RytFNzQy2NIW60I1Ud_6idGUvDN9GEEfL3D-JAG-SaariT1talQerdzM8UV4HoptfPe-Egs_ZXk6uXFBTYeRRa-EwFDyk4vR58fQ1gXMEn_IDQFxZUzAuirQfInIBkhk9cTpAQZeZLuVDsMaGs_SwKKUGa2R8CHMLPpgILLAirpghiOzkiVXNaCg",
-      coverAlt: "Bộ Sưu Tập Địa Chí Sách Cổ",
+      coverAlt: "Bộ sưu tập địa chí sách cổ",
     },
   ] satisfies PromoBanner[],
   featuredAuthors: [
@@ -209,8 +209,8 @@ export const homeContent = {
     },
   ] satisfies FeaturedAuthor[],
   storeSection: {
-    eyebrow: "Không Gian Di Sản Giữa Lòng Phố Cổ",
-    title: "Chốn Dừng Chân Cho Người Yêu Sách Xưa",
+    eyebrow: "Không gian di sản giữa lòng phố cổ",
+    title: "Chốn dừng chân cho người yêu sách xưa",
     body: "Tọa lạc tại 45 Phố Hàng Bạc, tiệm sách giữ nguyên vẹn nếp nhà gỗ truyền thống với những kệ sách cao chạm trần, mùi giấy ố vàng ấm áp và góc trà sen nóng miễn phí đón tiếp bạn hữu từ khắp ba miền.",
     addressCard: {
       title: "Địa chỉ hiệu sách",
@@ -218,7 +218,7 @@ export const homeContent = {
       hours: "⏰ 8:30 - 21:30 hàng ngày",
     },
     teaCard: {
-      title: "Thưởng Trà & Đọc Sách Tự Do",
+      title: "Thưởng trà & đọc sách tự do",
       line1: "Trà sen Bách Diệp miễn phí",
       line2: "Ghế gỗ & kính lúp giám định sẵn sàng",
     },
@@ -241,7 +241,7 @@ export const homeContent = {
   blogPosts: [
     {
       dateLabel: "15 Tháng 10, 2024",
-      category: "Cẩm Nang Sưu Tầm",
+      category: "Cẩm nang sưu tầm",
       title: "Nghệ thuật bảo quản sách ố vàng & phục chế bìa da thủ công",
       imageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuDyobDqrKI1b1CoumEAGEpfWlvRSGBzyMBuqf5gZQwlIkmu4bKmZwUjU-ikh6SGDdPVJppGqVrM_x9BHIDAVnzFZpXUGotY1gQoj7f_LseGvbExjkY9QLoqgL4RIOC9ozJCXDV3TSJm2lg7hquL2wWTx4hgAso7V89nYxrxL_rh4yUabivEUmpSEiPqeygOs5qL2PwQWmBRinPVWVYOXteWQj9atq-fXZw2xRb5luZq",
@@ -249,7 +249,7 @@ export const homeContent = {
     },
     {
       dateLabel: "08 Tháng 10, 2024",
-      category: "Thư Tịch Tiền Chiến",
+      category: "Thư tịch tiền chiến",
       title: "Những bản in đầu tiên của Tự Lực Văn Đoàn lưu lạc phương Nam",
       imageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuBojuZzncEKrE2cPgBavaxuzB8Lm3S_QqqLoGh3ecf6a24i9qFhcXK7OnqwCakFFlzYnuILIK05I1slKUBzL6fUtzFMqec_mnZg7r3SmddTgdyjCUtToRXwCMupRywiBap2Jut39MyT87XU46ZnA28I1TzEJPwNsdJ51md0dMYbiMC2CUDyCF_fS54oEVvAmTU-V0Sarsk4ODMa4RerMQ_WjtqfsESLCZy5Zw9cWWXO",
@@ -257,7 +257,7 @@ export const homeContent = {
     },
     {
       dateLabel: "29 Tháng 09, 2024",
-      category: "Thủ Bút & Ký Tên",
+      category: "Thủ bút & ký tên",
       title: "Thú sưu tầm ấn bản đặc biệt ký tặng tác giả: Thật và giả",
       imageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuD7hVjCCzX8vEnGld0vl9nNypVNgdD0N_BbiiDLZQOA6A0ATbt63XzgBTjIQLbVT_XdqULEJ2Ti20FOtesZnBsf5dxeTpzICFvJyQbo6sjdPkavky9P1ce_NfEmUAf7Pj3BL8rFM9mOWEt4TIweqxz8rSyvLgxbVNkeigq_Pv79AFMGh0YIjhYXSBYZzEQ2da1eIjcU7MRZfuvGQTya8paWGxIbbP898uTnWUVR2nJM",
@@ -265,7 +265,7 @@ export const homeContent = {
     },
     {
       dateLabel: "19 Tháng 09, 2024",
-      category: "Ký Ức Thời Bao Cấp",
+      category: "Ký ức thời bao cấp",
       title: "Sách NXB Cầu Vồng Liên Xô: Tuổi thơ lấp lánh của thế hệ 7x, 8x",
       imageUrl:
         "https://lh3.googleusercontent.com/aida-public/AB6AXuA8CZUQpwsuDOkFo2hIf_s8L-mDyAVOselfxt8aoK3mmfmOifwOOeRMqgx17hxhAtRuTLyF5dXJ_BSco4mIl8a6BWhXR_YvkreqzpewqQB_iEJT7VH583FjHf4uJUrItTVu7F_UiHq4-C8QZzePzZ0ETdhC6QerO1nzR7XUsPSRjMIaaDCqV_ugQuFqNhiyo9d8HKeGs5IB5t1lGj1lzy7CsxAodU2_DZpGrduExJ2p",
@@ -276,16 +276,16 @@ export const homeContent = {
     title: "Đăng ký nhận bản tin sách",
     description:
       "Nhận email ưu tiên mỗi sáng thứ Bảy khi tiệm nhập về các ấn bản hiếm, bản in trước 1975 hoặc bộ sưu tập độc bản chưa kịp đăng lên kệ.",
-    submitLabel: "Đăng Ký Ngay",
+    submitLabel: "Đăng ký ngay",
     successMessage: "Cảm ơn bạn hữu đã đăng ký nhận tin sách xưa!",
     placeholder: "Nhập địa chỉ email của bạn...",
   },
   footerQuickLinks: [
-    { label: "Văn Học Tiền Chiến", href: "/books" },
+    { label: "Văn học tiền chiến", href: "/books" },
     { label: "Sách NXB Cầu Vồng", href: "/books" },
-    { label: "Ấn Bản Trước 1975", href: "/books" },
-    { label: "Sách Có Chữ Ký Tác Giả", href: "/books" },
-    { label: "Địa Chí Ba Miền", href: "/books" },
+    { label: "Ấn bản trước 1975", href: "/books" },
+    { label: "Sách có chữ ký tác giả", href: "/books" },
+    { label: "Địa chí ba miền", href: "/books" },
   ] satisfies FooterLink[],
   footerPolicyLinks: [
     { label: "Quy trình thẩm định & cam kết độ mới", href: "#" },
@@ -295,9 +295,9 @@ export const homeContent = {
     { label: "Quy định bảo mật & điều khoản sử dụng", href: "#" },
   ] satisfies FooterLink[],
   footerLegalLinks: [
-    { label: "Chính Sách Bảo Mật", href: "#" },
-    { label: "Điều Khoản Mua Hàng", href: "#" },
-    { label: "Sơ Đồ Website", href: "#" },
+    { label: "Chính sách bảo mật", href: "#" },
+    { label: "Điều khoản mua hàng", href: "#" },
+    { label: "Sơ đồ website", href: "#" },
   ] satisfies FooterLink[],
   socialLinks: [
     { label: "Facebook", abbrev: "f", href: "#" },
@@ -306,14 +306,14 @@ export const homeContent = {
     { label: "Zalo", abbrev: "zalo", href: "#" },
   ] satisfies SocialLink[],
   showcase: {
-    eyebrow: "Danh Mục Được Yêu Thích",
-    title: "Sách Đọc Hay & Bản In Tuyển Chọn",
-    viewAllLabel: "Xem Toàn Bộ Sách Mới Về Hôm Nay",
+    eyebrow: "Thể loại được yêu thích",
+    title: "Sách đọc hay & bản in tuyển chọn",
+    viewAllLabel: "Xem toàn bộ sách mới về hôm nay",
   },
   authorsSection: {
-    eyebrow: "Cây Bút Bất Hủ",
-    title: "Tác Giả Được Độc Giả Yêu Thích",
-    viewAllLabel: "Xem Tất Cả (45 Tác Giả)",
+    eyebrow: "Cây bút bất hủ",
+    title: "Tác giả được độc giả yêu thích",
+    viewAllLabel: "Xem tất cả (45 tác giả)",
   },
 } as const;
 

@@ -71,7 +71,7 @@ export function HomeBookCard({ book }: { book: BookCardData }) {
           }}
         >
           <MaterialIcon name="shopping_cart" className="text-sm" />
-          {soldOut ? "Hết hàng" : "Thêm Vào Giỏ"}
+          {soldOut ? "Hết hàng" : "Thêm vào giỏ"}
         </Button>
         {!soldOut && (
           <p className="sr-only">Giá {formatVnd(book.sale_price)}</p>

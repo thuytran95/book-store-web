@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { LinkButton } from "@/components/shared/link-button";
 import { MaterialIcon } from "@/features/home/components/material-icon";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
@@ -9,36 +10,25 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { conditionBand, formatVnd } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
-import type { AdminInventoryRow, ShelfStatus } from "../inventory/types";
+import type { AdminInventoryRow, ShelfStatus } from "../../inventory/types";
 
-const SHELF: Record<ShelfStatus, { label: string; className: string; dot: string }> = {
+const SHELF: Record<ShelfStatus> = {
   on_shelf: {
-    label: "Còn trên kệ",
+    label: "Còn hàng",
     className: "bg-secondary-container/70 text-on-secondary-container",
-    dot: "bg-secondary",
   },
   held: {
     label: "Đang giữ hàng",
     className: "bg-tertiary-fixed text-on-tertiary-fixed",
-    dot: "bg-tertiary",
   },
   sold: {
-    label: "Đã bán / hết",
+    label: "Hết hàng",
     className: "bg-surface-container-high text-on-surface",
-    dot: "bg-outline",
   },
   hidden: {
     label: "Đang ẩn",
     className: "bg-surface-container text-on-surface-variant",
-    dot: "bg-outline-variant",
   },
-};
-
-const BAND_CLASS: Record<ReturnType<typeof conditionBand>, string> = {
-  mint: "bg-primary-container text-on-primary",
-  good: "bg-secondary-container text-on-secondary-container",
-  fair: "bg-surface-container-high text-on-surface",
-  vintage: "bg-tertiary-fixed text-on-tertiary-fixed",
 };
 
 export function InventoryTable({
@@ -50,7 +40,6 @@ export function InventoryTable({
   error,
   onEdit,
   onMarkSold,
-  onPrint,
 }: {
   rows: AdminInventoryRow[];
   selectedIds: Set<number>;
@@ -60,7 +49,6 @@ export function InventoryTable({
   error: unknown;
   onEdit: (id: number) => void;
   onMarkSold: (id: number) => void;
-  onPrint: (id: number) => void;
 }) {
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />;
   if (error) return <ErrorMessage error={error} />;
@@ -68,20 +56,14 @@ export function InventoryTable({
     return (
       <EmptyState
         title="Chưa có sách trong kho"
-        action={
-          <Link
-            href="/admin/books/new"
-            className="inline-flex rounded-full bg-primary-container px-space-lg py-2.5 text-label-md text-on-primary"
-          >
-            Thêm sách mới
-          </Link>
-        }
+        action={<LinkButton href="/admin/books/new">Thêm sách mới</LinkButton>}
       />
     );
   }
 
   const pageIds = rows.map((r) => r.id);
-  const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
+  const allSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
 
   return (
     <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-[0_8px_24px_-4px_rgba(27,77,62,0.06)]">
@@ -99,17 +81,27 @@ export function InventoryTable({
                 />
               </th>
               <th className="px-4 py-3.5 font-semibold">Mã lưu kho</th>
-              <th className="min-w-[280px] px-4 py-3.5 font-semibold">Sách & Tác giả</th>
+              <th className="min-w-[280px] px-4 py-3.5 font-semibold">
+                Sách & Tác giả
+              </th>
               <th className="px-4 py-3.5 font-semibold">Thể loại</th>
-              <th className="min-w-[170px] px-4 py-3.5 font-semibold">Tình trạng sách</th>
-              <th className="min-w-[140px] px-4 py-3.5 text-right font-semibold">Giá bán</th>
-              <th className="px-4 py-3.5 text-center font-semibold">Trạng thái</th>
-              <th className="w-36 px-4 py-3.5 text-right font-semibold">Thao tác</th>
+              <th className="min-w-[140px] px-4 py-3.5 text-right font-semibold">
+                Giá bán
+              </th>
+              <th className="px-4 py-3.5 text-center font-semibold">
+                Trạng thái
+              </th>
+              <th className="w-36 px-4 py-3.5 text-right font-semibold">
+                Thao tác
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="group transition-colors hover:bg-surface-container-low/40">
+              <tr
+                key={row.id}
+                className="group transition-colors hover:bg-surface-container-low/40"
+              >
                 <td className="px-4 py-3.5 text-center">
                   <input
                     type="checkbox"
@@ -132,7 +124,10 @@ export function InventoryTable({
                         toast.success("Đã sao chép mã lưu kho");
                       }}
                     >
-                      <MaterialIcon name="content_copy" className="text-[16px]" />
+                      <MaterialIcon
+                        name="content_copy"
+                        className="text-[16px]"
+                      />
                     </button>
                   </div>
                 </td>
@@ -140,7 +135,13 @@ export function InventoryTable({
                   <div className="flex items-center gap-3">
                     <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded bg-surface-container shadow-sm">
                       {row.coverUrl ? (
-                        <Image src={row.coverUrl} alt="" fill className="object-cover transition-transform group-hover:scale-105" sizes="48px" />
+                        <Image
+                          src={row.coverUrl}
+                          alt=""
+                          fill
+                          className="object-cover transition-transform group-hover:scale-105"
+                          sizes="48px"
+                        />
                       ) : null}
                     </div>
                     <div className="min-w-0">
@@ -152,11 +153,15 @@ export function InventoryTable({
                       </Link>
                       <p className="text-body-sm text-on-surface-variant">
                         Tác giả:{" "}
-                        <span className="font-medium text-on-surface">{row.author ?? "—"}</span>
+                        <span className="font-medium text-on-surface">
+                          {row.author ?? "—"}
+                        </span>
                       </p>
                       {(row.publishedYear || row.publisher) && (
                         <p className="mt-0.5 text-label-sm text-on-surface-variant">
-                          {row.publishedYear ? `Bản in ${row.publishedYear}` : null}
+                          {row.publishedYear
+                            ? `Bản in ${row.publishedYear}`
+                            : null}
                           {row.publishedYear && row.publisher ? " • " : null}
                           {row.publisher}
                         </p>
@@ -169,37 +174,29 @@ export function InventoryTable({
                     {row.categoryName}
                   </span>
                 </td>
-                <td className="px-4 py-3.5">
-                  <span
-                    className={cn(
-                      "inline-flex rounded-full px-2 py-0.5 text-label-sm font-semibold",
-                      BAND_CLASS[conditionBand(row.conditionPct)],
-                    )}
-                  >
-                    {row.conditionPct}%
-                  </span>
-                  {row.conditionNote ? (
-                    <p className="mt-0.5 line-clamp-2 text-body-sm text-on-surface-variant">{row.conditionNote}</p>
-                  ) : null}
-                </td>
+
                 <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                  <div className="text-headline-sm font-bold text-primary">{formatVnd(row.salePrice)}</div>
+                  <div className="text-headline-sm font-bold text-primary">
+                    {formatVnd(row.salePrice)}
+                  </div>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-center">
                   <span
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-label-sm font-semibold",
+                      "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs",
                       SHELF[row.shelfStatus].className,
                     )}
                   >
-                    <span className={cn("size-1.5 rounded-full", SHELF[row.shelfStatus].dot)} />
                     {SHELF[row.shelfStatus].label}
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-4 py-3.5 text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <IconBtn title="In tem mã vạch" icon="print" onClick={() => onPrint(row.id)} />
-                    <IconBtn title="Chỉnh sửa" icon="edit" onClick={() => onEdit(row.id)} />
+                    <IconBtn
+                      title="Chỉnh sửa"
+                      icon="edit"
+                      onClick={() => onEdit(row.id)}
+                    />
                     <IconBtn
                       title="Xuất bán"
                       icon="shopping_cart_checkout"

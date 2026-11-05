@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BookForm } from "@/features/admin/components/book-form";
+import { BookForm } from "@/features/admin/components/book/book-form";
 
 export const metadata: Metadata = { title: "Thêm sách" };
 

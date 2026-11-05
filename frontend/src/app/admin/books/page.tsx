@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BooksTable } from "@/features/admin/components/books-table";
+import { BooksTable } from "@/features/admin/components/book/books-table";
 
 export const metadata: Metadata = { title: "Quản lý sách" };
 

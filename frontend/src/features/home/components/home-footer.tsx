@@ -39,7 +39,7 @@ export function HomeFooter() {
 
           <div className="space-y-3 lg:col-span-3">
             <h4 className="text-xs font-bold tracking-wider text-white uppercase">
-              Cần Hỗ Trợ Bạn Hữu?
+              Cần hỗ trợ bạn hữu?
             </h4>
             <div className="space-y-1.5 text-xs text-gray-400">
               <p className="text-lg font-extrabold text-amber-400">{shop.hotline}</p>
@@ -53,7 +53,7 @@ export function HomeFooter() {
           </div>
 
           <div className="space-y-3 lg:col-span-2">
-            <h4 className="text-xs font-bold tracking-wider text-white uppercase">Kho Sách</h4>
+            <h4 className="text-xs font-bold tracking-wider text-white uppercase">Kho sách</h4>
             <ul className="space-y-2 text-xs text-gray-400">
               {footerQuickLinks.map((link) => (
                 <li key={link.label}>
@@ -67,7 +67,7 @@ export function HomeFooter() {
 
           <div className="space-y-3 lg:col-span-3">
             <h4 className="text-xs font-bold tracking-wider text-white uppercase">
-              Chính Sách & Ký Gửi
+              Chính sách & ký gửi
             </h4>
             <ul className="space-y-2 text-xs text-gray-400">
               {footerPolicyLinks.map((link) => (

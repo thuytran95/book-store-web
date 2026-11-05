@@ -6,7 +6,7 @@ import { parseBookQuery } from "@/lib/book-query";
 
 export const metadata: Metadata = {
   title: "Danh sách sách cũ",
-  description: "Duyệt và lọc sách cũ theo danh mục, giá và tình trạng.",
+  description: "Duyệt và lọc sách cũ theo thể loại, giá và tình trạng.",
 };
 
 export default async function BooksPage({

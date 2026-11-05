@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PriceTag } from "@/components/shared/badges";
@@ -19,6 +18,7 @@ import { toast } from "@/lib/toast";
 import { checkoutSchema } from "@/lib/validation/checkout";
 import { cn } from "@/lib/utils";
 import { useCart } from "../hooks/use-cart";
+import { LinkButton } from "@/components/shared/link-button";
 
 const BANK_INFO = process.env.NEXT_PUBLIC_BANK_TRANSFER_INFO ?? "Vui lòng liên hệ cửa hàng để nhận thông tin chuyển khoản.";
 const SHIPPING_FEE = 0; // open question: flat / threshold / admin-entered. Server sets the real fee.
@@ -55,7 +55,7 @@ export function CheckoutView() {
     return (
       <EmptyState
         title="Giỏ hàng trống"
-        action={<Button render={<Link href="/books" />}>Xem sách</Button>}
+        action={<LinkButton href="/books">Xem sách</LinkButton>}
       />
     );
   }

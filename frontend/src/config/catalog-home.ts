@@ -2,10 +2,10 @@ import type { BookQuery } from "@/lib/book-query";
 
 /** Home showcase tabs → `GET /api/v1/books` query (see docs/spec/api/catalog-home.md). */
 export const HOME_BOOK_TABS = [
-  { id: "featured", label: "Sách Nổi Bật" },
-  { id: "newest", label: "Mới Về Hôm Nay" },
-  { id: "rare", label: "Ấn Bản Quý Hiếm" },
-  { id: "under100k", label: "Sách Dưới 100k" },
+  { id: "featured", label: "Sách nổi bật" },
+  { id: "newest", label: "Mới về hôm nay" },
+  { id: "rare", label: "Ấn bản quý hiếm" },
+  { id: "under100k", label: "Sách dưới 100k" },
 ] as const;
 
 export type HomeBookTabId = (typeof HOME_BOOK_TABS)[number]["id"];

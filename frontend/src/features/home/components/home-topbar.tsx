@@ -28,14 +28,14 @@ export function HomeTopbar() {
             className="flex items-center gap-1 transition-colors hover:text-primary-fixed"
           >
             <MaterialIcon name="local_shipping" className="text-sm" />
-            Tra Cứu Đơn Hàng
+            Tra cứu đơn hàng
           </Link>
           <Link
             href="/account/profile"
             className="flex items-center gap-1 transition-colors hover:text-primary-fixed"
           >
             <MaterialIcon name="person" className="text-sm" />
-            Tài Khoản
+            Tài khoản
           </Link>
         </div>
       </div>

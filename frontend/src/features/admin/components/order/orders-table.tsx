@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { components } from "@/lib/api/schema";
 import { formatDate, orderStatusLabel, paymentLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { useAdminOrders } from "../hooks/use-admin";
+import { useAdminOrders } from "../../hooks/use-admin";
 
 type OrderStatus = components["schemas"]["OrderStatus"];
 const TABS: (OrderStatus | "all")[] = ["all", "pending", "confirmed", "shipping", "completed", "cancelled"];

@@ -17,7 +17,8 @@ import type { components } from "@/lib/api/schema";
 import { errorMessage } from "@/lib/error-messages";
 import { formatDate, formatVnd, orderStatusLabel, paymentLabel } from "@/lib/format";
 import { toast } from "@/lib/toast";
-import { useAdminOrder, useTransitionOrder } from "../hooks/use-admin";
+import { useAdminOrder, useTransitionOrder } from "../../hooks/use-admin";
+import { LinkButton } from "@/components/shared/link-button";
 
 type OrderStatus = components["schemas"]["OrderStatus"];
 
@@ -45,7 +46,7 @@ export function AdminOrderDetail() {
 
   if (isLoading) return <Skeleton className="h-64" />;
   if (hasCode(error, "NOT_FOUND") || (!order && !error)) {
-    return <EmptyState title="Không tìm thấy đơn" action={<Button render={<Link href="/admin/orders" />}>Danh sách</Button>} />;
+    return <EmptyState title="Không tìm thấy đơn" action={<LinkButton href="/admin/orders">Danh sách</LinkButton>} />;
   }
   if (error && !order) return <ErrorMessage error={error} />;
   if (!order) return null;

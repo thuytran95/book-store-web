@@ -7,6 +7,7 @@ import type { components } from "@/lib/api/schema";
 type S = components["schemas"];
 export type BookCreate = S["BookCreate"];
 export type BookUpdate = S["BookUpdate"];
+export type CategoryRead = S["CategoryRead"];
 export type OrderStatus = S["OrderStatus"];
 export type ReservationStatus = S["ReservationStatus"];
 export type BookRequestStatus = S["BookRequestStatus"];

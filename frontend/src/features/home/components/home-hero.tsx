@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { LinkButton } from "@/components/shared/link-button";
 import { useState } from "react";
 import type { HeroBookCover, HeroSlide } from "@/config/home";
 import type { BookCardData } from "@/features/catalog/components/book-card";
@@ -54,19 +54,13 @@ export function HomeHero({ slides, fallbackBooks }: Props) {
               {slide.description}
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <Link
-                href={slide.primaryCta.href}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-primary-container hover:shadow-lg"
-              >
+              <LinkButton href={slide.primaryCta.href}>
                 {slide.primaryCta.label}
                 <MaterialIcon name="arrow_forward" className="text-base" />
-              </Link>
-              <Link
-                href={slide.secondaryCta.href}
-                className="inline-flex rounded-full border border-black bg-white px-6 py-3.5 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-gray-50"
-              >
+              </LinkButton>
+              <LinkButton href={slide.secondaryCta.href} variant="outline">
                 {slide.secondaryCta.label}
-              </Link>
+              </LinkButton>
             </div>
             {slide.priceTeaser && (
               <div className="flex items-center gap-3 pt-2">

@@ -13,7 +13,7 @@ import type { components } from "@/lib/api/schema";
 import { errorMessage } from "@/lib/error-messages";
 import { formatDate, reservationStatusLabel } from "@/lib/format";
 import { toast } from "@/lib/toast";
-import { useAdminReservations, useCancelAdminReservation } from "../hooks/use-admin";
+import { useAdminReservations, useCancelAdminReservation } from "../../hooks/use-admin";
 
 type Status = components["schemas"]["ReservationStatus"];
 const TABS: (Status | "all")[] = ["all", "active", "expired", "converted", "cancelled"];

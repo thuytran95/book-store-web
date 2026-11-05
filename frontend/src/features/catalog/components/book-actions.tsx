@@ -1,7 +1,6 @@
 "use client";
 
 import { Clock, ShoppingCart } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAddToCart } from "@/features/cart/hooks";
@@ -9,6 +8,7 @@ import { useReserve } from "@/features/reservations/hooks";
 import { errorMessage } from "@/lib/error-messages";
 import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
+import { LinkButton } from "@/components/shared/link-button";
 
 type Props = { bookId: number; title: string; available: number; visible: boolean };
 
@@ -24,9 +24,9 @@ export function BookActions({ bookId, title, available, visible }: Props) {
     return (
       <div className="grid gap-2">
         <p className="text-sm font-medium text-destructive">Sách này đã hết hàng.</p>
-        <Button render={<Link href={`/book-requests?title=${encodeURIComponent(title)}`} />}>
+        <LinkButton href={`/book-requests?title=${encodeURIComponent(title)}`}>
           Yêu cầu tìm cuốn này
-        </Button>
+        </LinkButton>
       </div>
     );
   }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { OrderStatusBadge, PriceTag } from "@/components/shared/badges";
@@ -14,6 +13,7 @@ import { formatDate, formatVnd, paymentLabel } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { useCancelOrder, useOrder } from "../hooks/use-orders";
 import { StatusTimeline } from "./status-timeline";
+import { LinkButton } from "@/components/shared/link-button";
 
 export function OrderDetail() {
   const id = Number(useParams().id);
@@ -27,7 +27,7 @@ export function OrderDetail() {
     return (
       <EmptyState
         title="Không tìm thấy đơn hàng"
-        action={<Button render={<Link href="/orders" />}>Đơn hàng của tôi</Button>}
+        action={<LinkButton href="/orders">Đơn hàng của tôi</LinkButton>}
       />
     );
   }

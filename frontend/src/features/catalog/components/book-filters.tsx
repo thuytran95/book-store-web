@@ -41,7 +41,7 @@ const toNum = (v: string) => (v === "" ? undefined : Number(v));
 function Fields({ categories, value, onChange }: Props) {
   return (
     <div className="grid gap-4">
-      <FormField label="Danh mục">
+      <FormField label="Thể loại">
         <NativeSelect
           value={value.category ?? ""}
           onChange={(e) => onChange({ category: e.target.value || undefined })}

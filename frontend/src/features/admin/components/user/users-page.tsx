@@ -14,7 +14,7 @@ import { errorMessage } from "@/lib/error-messages";
 import { formatDate } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
-import { useAdminUsers, useSetUserLocked } from "../hooks/use-admin";
+import { useAdminUsers, useSetUserLocked } from "../../hooks/use-admin";
 
 type Row = { id: number; full_name: string; is_locked: boolean };
 

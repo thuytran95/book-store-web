@@ -3,7 +3,7 @@ import { z } from "zod";
 const emptyToUndef = (v: unknown) => (v === "" || v === null || Number.isNaN(v) ? undefined : v);
 
 export const bookSchema = z.object({
-  category_id: z.coerce.number().int().positive("Chọn danh mục"),
+  category_id: z.coerce.number().int().positive("Chọn thể loại"),
   title: z.string().trim().min(1, "Bắt buộc").max(255),
   author: z.preprocess(emptyToUndef, z.string().trim().max(255).optional()),
   publisher: z.preprocess(emptyToUndef, z.string().trim().max(255).optional()),
