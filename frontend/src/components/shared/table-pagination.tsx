@@ -12,9 +12,17 @@ type PagerProps = {
 };
 
 /** Round page buttons: chevrons, numbers with gaps, current page filled. */
-export function Pager({ page, pageCount, onPageChange, className }: PagerProps) {
+export function Pager({
+  page,
+  pageCount,
+  onPageChange,
+  className,
+}: PagerProps) {
   return (
-    <nav aria-label="Phân trang" className={cn("flex items-center gap-1", className)}>
+    <nav
+      aria-label="Phân trang"
+      className={cn("flex items-center gap-1", className)}
+    >
       <PageArrow
         icon="chevron_left"
         label="Trang trước"
@@ -23,7 +31,10 @@ export function Pager({ page, pageCount, onPageChange, className }: PagerProps) 
       />
       {getPageWindow(page, pageCount).map((p, i) =>
         p === "…" ? (
-          <span key={`gap-${i}`} className="px-1 text-label-sm text-on-surface-variant">
+          <span
+            key={`gap-${i}`}
+            className="px-1 text-label-sm text-on-surface-variant"
+          >
             …
           </span>
         ) : (
@@ -113,15 +124,10 @@ export function TablePagination({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-between gap-space-md bg-surface-container-low px-space-md py-3.5 md:flex-row",
+        "flex flex-col items-center justify-center gap-space-md px-space-md py-3.5",
         className,
       )}
     >
-      {children ?? (
-        <span className="text-body-sm text-on-surface-variant">
-          Hiển thị {start}–{end} / {total} {itemLabel}
-        </span>
-      )}
       <Pager page={page} pageCount={pageCount} onPageChange={setPage} />
     </div>
   );

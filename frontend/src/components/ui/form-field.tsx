@@ -15,7 +15,14 @@ type Props = {
 };
 
 /** Label + control + error/hint wrapper for react-hook-form fields. */
-export function FormField({ label, error, hint, required, className, children }: Props) {
+export function FormField({
+  label,
+  error,
+  hint,
+  required,
+  className,
+  children,
+}: Props) {
   const id = useId();
   const descId = `${id}-desc`;
   const control = isValidElement(children)
@@ -26,7 +33,7 @@ export function FormField({ label, error, hint, required, className, children }:
       })
     : children;
   return (
-    <div className={cn("grid gap-1.5", className)}>
+    <div className={cn("grid gap-4", className)}>
       <Label htmlFor={id}>
         {label}
         {required && <span className="text-destructive"> *</span>}
@@ -36,7 +43,10 @@ export function FormField({ label, error, hint, required, className, children }:
         <p
           id={descId}
           role={error ? "alert" : undefined}
-          className={cn("text-xs", error ? "text-destructive" : "text-muted-foreground")}
+          className={cn(
+            "text-xs",
+            error ? "text-destructive" : "text-muted-foreground",
+          )}
         >
           {error ?? hint}
         </p>
