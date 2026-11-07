@@ -12,6 +12,7 @@ export const ERROR_MESSAGES: Record<string, string> = {
   INVALID_REFRESH: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.",
   OUT_OF_STOCK: "Sách không đủ số lượng trong kho.",
   BOOK_UNAVAILABLE: "Sách này hiện không còn bán.",
+  QUANTITY_BELOW_PENDING: "Không thể giảm dưới số bản đang chờ xác nhận.",
   CART_EMPTY: "Giỏ hàng đang trống.",
   INVALID_TRANSITION: "Không thể chuyển sang trạng thái này.",
   CANNOT_LOCK_SELF: "Bạn không thể khoá chính mình.",

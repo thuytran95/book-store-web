@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.errors import NotFound, OutOfStock
+from app.core.errors import Conflict, NotFound, OutOfStock
 from app.modules.catalog.models import Book
 from app.modules.orders.models import Order, OrderItem, OrderStatus
 
@@ -125,6 +125,20 @@ class Inventory:
         books = await self._lock_books([book_id])
         if book_id not in books:
             raise NotFound("Book not found")
+        held = int(
+            await self.session.scalar(
+                select(func.coalesce(func.sum(OrderItem.quantity), 0))
+                .join(Order, Order.id == OrderItem.order_id)
+                .where(OrderItem.book_id == book_id, Order.status == OrderStatus.pending)
+            )
+            or 0
+        )
+        if quantity < held:
+            raise Conflict(
+                "Quantity below copies held by pending orders",
+                code="QUANTITY_BELOW_PENDING",
+                details={"pending": held},
+            )
         books[book_id].quantity = quantity
 
     async def _order_items(self, order_id: int) -> list[OrderItem]:

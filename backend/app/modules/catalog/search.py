@@ -10,9 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.modules.catalog.models import Book, BookAuthor, Category
-from app.modules.catalog.schemas import BookQuery, BookSort
+from app.modules.catalog.schemas import BookQuery, BookSort, StockStatus
 
 TRIGRAM_THRESHOLD = 0.3
+STOCK_CODE_RE = re.compile(r"^\s*(?:ms-?)?0*(\d{1,9})\s*$", re.IGNORECASE)
 
 
 def _unaccent(col):
@@ -50,8 +51,15 @@ def build_filters(q: BookQuery, *, public: bool = True) -> list:
     filters = []
     if public:
         filters.append(Book.is_visible.is_(True))
-    elif q.visible is not None:
-        filters.append(Book.is_visible.is_(q.visible))
+    else:
+        if q.visible is not None:
+            filters.append(Book.is_visible.is_(q.visible))
+        if q.stock == StockStatus.in_stock:
+            filters += [Book.is_visible.is_(True), Book.quantity > 0]
+        elif q.stock == StockStatus.out_of_stock:
+            filters += [Book.is_visible.is_(True), Book.quantity == 0]
+        elif q.stock == StockStatus.hidden:
+            filters.append(Book.is_visible.is_(False))
     if q.category_slug:
         filters.append(Book.category_id.in_(
             select(Category.id).where(Category.slug == q.category_slug)
@@ -66,6 +74,8 @@ def build_filters(q: BookQuery, *, public: bool = True) -> list:
         filters.append(Book.price <= q.price_max)
     if q.condition_min is not None:
         filters.append(Book.condition_pct >= q.condition_min)
+    if q.condition_max is not None:
+        filters.append(Book.condition_pct <= q.condition_max)
     if q.in_stock_only:
         filters.append(Book.quantity > 0)
     return filters
@@ -77,7 +87,13 @@ async def search_books(
     stmt = select(Book).where(and_(*build_filters(q, public=public)))
     rank = None
     if q.text and q.text.strip():
-        stmt, rank = apply_text(stmt, q.text)
+        code = None if public else STOCK_CODE_RE.match(q.text)
+        if code:
+            # Admin: "MS-00012" / "12" finds book #12 (stock code), plus any text matches.
+            text_stmt, rank = apply_text(select(Book.id), q.text)
+            stmt = stmt.where(or_(Book.id == int(code.group(1)), Book.id.in_(text_stmt)))
+        else:
+            stmt, rank = apply_text(stmt, q.text)
 
     total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
 

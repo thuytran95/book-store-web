@@ -16,6 +16,8 @@ from app.modules.catalog.schemas import (
     AuthorRead,
     AuthorUpdate,
     BookAdminRead,
+    BookBulkAction,
+    BookBulkResult,
     BookCard,
     BookCreate,
     BookDeleteResult,
@@ -199,6 +201,28 @@ async def delete_book(session: AsyncSession, book_id: int) -> BookDeleteResult:
     await session.delete(book)
     await session.flush()
     return BookDeleteResult(deleted=True, hidden=False)
+
+
+async def bulk_books(
+    session: AsyncSession, ids: list[int], action: BookBulkAction
+) -> BookBulkResult:
+    """Hide / show / delete many books. Unknown ids are skipped."""
+    ids = sorted(set(ids))
+    if action in (BookBulkAction.hide, BookBulkAction.show):
+        res = await session.execute(
+            update(Book)
+            .where(Book.id.in_(ids))
+            .values(is_visible=action == BookBulkAction.show)
+            .execution_options(synchronize_session="fetch")
+        )
+        return BookBulkResult(updated=res.rowcount or 0)
+    result = BookBulkResult()
+    existing = list(await session.scalars(select(Book.id).where(Book.id.in_(ids))))
+    for book_id in existing:
+        r = await delete_book(session, book_id)
+        result.deleted += int(r.deleted)
+        result.hidden += int(r.hidden)
+    return result
 
 
 # ---- admin: book <-> authors ----

@@ -237,7 +237,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="min-h-screen w-full bg-background px-10 pt-32 pb-10">
+        <main className="px-margin md:px-space-xl py-space-lg max-w-[1440px] mx-auto flex flex-col gap-space-lg pb-28 md:pb-space-xl">
           {children}
         </main>
       </div>

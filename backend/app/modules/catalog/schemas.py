@@ -124,6 +124,31 @@ class BookDeleteResult(BaseModel):
     hidden: bool  # true when the book has history and was hidden instead
 
 
+class BookBulkAction(str, Enum):
+    hide = "hide"
+    show = "show"
+    delete = "delete"
+
+
+class BookBulkRequest(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=100)
+    action: BookBulkAction
+
+
+class BookBulkResult(BaseModel):
+    updated: int = 0
+    deleted: int = 0
+    hidden: int = 0
+
+
+class StockStatus(str, Enum):
+    """Admin list tabs; mutually exclusive (hidden wins over stock)."""
+
+    in_stock = "in_stock"
+    out_of_stock = "out_of_stock"
+    hidden = "hidden"
+
+
 class BookSort(str, Enum):
     newest = "newest"
     price_asc = "price_asc"
@@ -140,8 +165,10 @@ class BookQuery(BaseModel):
     price_min: int | None = Field(default=None, ge=0)
     price_max: int | None = Field(default=None, ge=0)
     condition_min: int | None = Field(default=None, ge=10, le=100)
+    condition_max: int | None = Field(default=None, ge=10, le=100)
     in_stock_only: bool = False
     visible: bool | None = None  # admin list only; ignored on public search
+    stock: StockStatus | None = None  # admin list only; ignored on public search
     sort: BookSort = BookSort.newest
     page: int = Field(default=1, ge=1)
     size: int = Field(default=20, ge=1, le=100)

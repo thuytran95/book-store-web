@@ -9,6 +9,8 @@ from app.modules.catalog.schemas import (
     AuthorRead,
     AuthorUpdate,
     BookAdminRead,
+    BookBulkRequest,
+    BookBulkResult,
     BookCreate,
     BookDeleteResult,
     BookUpdate,
@@ -28,6 +30,11 @@ async def list_books(session: SessionDep, q: BookQueryDep):
 @router.post("/books", response_model=BookAdminRead, status_code=status.HTTP_201_CREATED)
 async def create_book(body: BookCreate, session: SessionDep):
     return await service.create_book(session, body)
+
+
+@router.post("/books/bulk", response_model=BookBulkResult)
+async def bulk_books(body: BookBulkRequest, session: SessionDep):
+    return await service.bulk_books(session, body.ids, body.action)
 
 
 @router.get("/books/{book_id}", response_model=BookAdminRead)

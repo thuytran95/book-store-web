@@ -50,11 +50,11 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 | --- | --- | --- | --- |
 | auth | — | `POST /auth/register, /login, /logout, /refresh` (rate limited) | — |
 | users | `users` | `GET/PATCH /me` | `GET /admin/users`, `POST /admin/users/{id}/lock, /unlock` |
-| catalog | `categories`, `authors`, `book_authors`, `books`, `book_images` | `GET /categories`, `GET /books` (search/filter, paginated), `GET /books/{slug}` | `GET/POST/PATCH/DELETE /admin/books` (`?author_id=` filter, body `author_ids`; PATCH `quantity` goes through `Inventory.set_quantity`), `GET/POST/PATCH/DELETE /admin/categories`, `GET/POST/PATCH/DELETE /admin/authors` (`?q=`, paginated; delete takes `?merge_into=`) |
+| catalog | `categories`, `authors`, `book_authors`, `books`, `book_images` | `GET /categories`, `GET /books` (search/filter, paginated), `GET /books/{slug}` | `GET/POST/PATCH/DELETE /admin/books` (`?author_id=`, `?stock=in_stock|out_of_stock|hidden`, `?condition_max=` filters; `text` also matches stock code `MS-00012`; body `author_ids`; PATCH `quantity` goes through `Inventory.set_quantity`), `POST /admin/books/bulk` (`{ids, action: hide|show|delete}` → `{updated, deleted, hidden}`), `GET/POST/PATCH/DELETE /admin/categories`, `GET/POST/PATCH/DELETE /admin/authors` (`?q=`, paginated; delete takes `?merge_into=`) |
 | media | (uses `book_images`) | — | `POST/PUT /admin/books/{id}/images`, `DELETE /admin/books/{id}/images/{image_id}` |
 | cart | `carts`, `cart_items` | `GET /cart`, `PUT/DELETE /cart/items/{book_id}`, `DELETE /cart` | — |
 | orders | `orders`, `order_items`, `order_status_history` | `POST/GET /orders` (body carries `ship_recipient`, `ship_phone`, `ship_address`), `GET /orders/{id}`, `POST /orders/{id}/cancel` | `GET /admin/orders`, `GET /admin/orders/{id}`, `POST /admin/orders/{id}/transition` |
-| reports | — (read-only queries) | — | `GET /admin/inventory/overview` |
+| reports | — (read-only queries) | — | `GET /admin/inventory/overview` (totals, intake this week, status counts `in_stock_titles`/`out_of_stock_titles`/`hidden_titles`, `pending_orders`) |
 | inventory | — (service only) | — | — |
 
 ## Domain rules
@@ -62,7 +62,8 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 - **Inventory** (`modules/inventory/service.py`): the only code that reads or changes `books.quantity`.
   Available stock = `quantity` − items in pending orders.
   `Inventory(session)` exposes `available`, `allocate` (row locks in id order, raises `OutOfStock`),
-  `commit`, `release`, `set_quantity`. An allocation is not a table: it comes from the order items
+  `commit`, `release`, `set_quantity` (raises `409 QUANTITY_BELOW_PENDING`, `details.pending`, when the new
+  quantity is below copies held by pending orders). An allocation is not a table: it comes from the order items
   inserted in the same transaction.
 - **Order status** (`orders/state_machine.py`): `pending → confirmed → shipping → completed`, and
   `cancelled` from any non-final state. Buyers can only cancel `pending`; admins can make any legal move.
@@ -88,7 +89,7 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 
 The frontend maps `code` to its message. Base codes: `NOT_FOUND` 404, `CONFLICT` 409, `FORBIDDEN` 403,
 `UNAUTHENTICATED` 401, `VALIDATION_ERROR` 422 (`details.fields[]`), `OUT_OF_STOCK`, `BOOK_UNAVAILABLE`,
-`CART_EMPTY`, `INVALID_TRANSITION`, `HTTP_<status>`. Module-specific codes use `DomainError(msg, code="...")`.
+`CART_EMPTY`, `INVALID_TRANSITION`, `QUANTITY_BELOW_PENDING`, `HTTP_<status>`. Module-specific codes use `DomainError(msg, code="...")`.
 Any new code must also be added to `frontend/src/lib/error-messages.ts`.
 
 ## Migrations

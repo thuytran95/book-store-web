@@ -11,7 +11,10 @@ type PagerProps = {
   className?: string;
 };
 
-/** Round page buttons: chevrons, numbers with gaps, current page filled. */
+const PAGE_BUTTON =
+  "flex h-9 min-w-9 items-center justify-center rounded-full px-2 text-label-md tabular-nums transition-colors";
+
+/** Round page buttons: chevrons, numbers with gaps, current page filled (admin prototype pager). */
 export function Pager({
   page,
   pageCount,
@@ -33,7 +36,7 @@ export function Pager({
         p === "…" ? (
           <span
             key={`gap-${i}`}
-            className="px-1 text-label-sm text-on-surface-variant"
+            className="px-1 text-label-md text-on-surface-variant"
           >
             …
           </span>
@@ -45,10 +48,11 @@ export function Pager({
             aria-label={`Trang ${p}`}
             aria-current={p === page ? "page" : undefined}
             className={cn(
-              "flex size-8 cursor-pointer items-center justify-center rounded-full text-label-sm transition-colors",
+              PAGE_BUTTON,
+              "cursor-pointer",
               p === page
-                ? "bg-primary-container font-semibold text-on-primary shadow-sm"
-                : "text-on-surface hover:bg-surface-container",
+                ? "bg-primary text-on-primary"
+                : "text-on-surface hover:bg-surface-container-low",
             )}
           >
             {p}
@@ -83,10 +87,11 @@ function PageArrow({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        "flex size-8 items-center justify-center rounded-full transition-colors",
+        PAGE_BUTTON,
+        "text-on-surface",
         disabled
-          ? "cursor-not-allowed text-outline-variant"
-          : "cursor-pointer text-on-surface hover:bg-surface-container",
+          ? "cursor-not-allowed opacity-35"
+          : "cursor-pointer hover:bg-surface-container-low",
       )}
     >
       <MaterialIcon name={icon} className="text-[18px]" />
@@ -124,10 +129,19 @@ export function TablePagination({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-space-md px-space-md py-3.5",
+        "flex flex-wrap items-center justify-between gap-space-md text-body-sm text-on-surface-variant",
         className,
       )}
     >
+      {children ?? (
+        <span>
+          Hiển thị{" "}
+          <span className="tabular-nums text-on-surface">
+            {start}–{end}
+          </span>{" "}
+          / <span className="tabular-nums text-on-surface">{total}</span> {itemLabel}
+        </span>
+      )}
       <Pager page={page} pageCount={pageCount} onPageChange={setPage} />
     </div>
   );

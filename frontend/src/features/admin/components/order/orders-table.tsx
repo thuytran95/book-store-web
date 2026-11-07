@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
-import { Pagination } from "@/components/ui/pagination";
+import { TablePagination } from "@/components/shared/table-pagination";
+import { getPageInfo } from "@/lib/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { components } from "@/lib/api/schema";
@@ -23,7 +24,6 @@ export function OrdersTable() {
   const [code, setCode] = useState("");
   const [page, setPage] = useState(1);
   const { data, isLoading, error } = useAdminOrders(status, page, code.trim() || undefined);
-  const pageCount = data ? Math.max(1, Math.ceil(data.total / data.size)) : 1;
 
   return (
     <div className="grid gap-4">
@@ -93,7 +93,13 @@ export function OrdersTable() {
           </TableBody>
         </Table>
       )}
-      <Pagination page={page} pageCount={pageCount} onChange={setPage} />
+      {data && data.total > 0 && (
+        <TablePagination
+          {...getPageInfo(page, data.size, data.total)}
+          setPage={setPage}
+          itemLabel="đơn hàng"
+        />
+      )}
     </div>
   );
 }

@@ -1,40 +1,59 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { LinkButton } from "@/components/shared/link-button";
 import { TablePagination } from "@/components/shared/table-pagination";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MaterialIcon } from "@/features/home/components/material-icon";
 import { errorMessage } from "@/lib/error-messages";
-import { formatCompactCount } from "@/lib/format";
 import { getPageInfo } from "@/lib/pagination";
 import { toast } from "@/lib/toast";
-import { useAdminInventoryFilters } from "../../hooks/use-admin-inventory-filters";
 import {
+  type BookBulkResult,
   useAdminAuthor,
   useAdminBooks,
   useAdminCategories,
+  useBulkBooks,
   useDeleteBook,
   useInventoryOverview,
 } from "../../hooks/use-admin";
+import { useAdminInventoryFilters } from "../../hooks/use-admin-inventory-filters";
 import {
   type AdminInventoryRow,
+  STOCK_TABS,
   toAdminInventoryRow,
 } from "../../inventory/types";
-import { InventoryBatchFooter } from "./inventory-batch-footer";
-import { InventoryKpiCard } from "./inventory-kpi-card";
+import { type InventoryBulkAction, InventoryBulkBar } from "./inventory-bulk-bar";
+import { InventoryCardList } from "./inventory-card-list";
+import { InventoryHeader } from "./inventory-header";
+import { InventoryStatusStrip } from "./inventory-status-strip";
 import { InventoryTable } from "./inventory-table";
 import { InventoryToolbar } from "./inventory-toolbar";
 
+const DELETE_NOTE =
+  "Sách đã có đơn hàng sẽ được ẩn thay vì xóa. Sách chưa có đơn sẽ bị xóa vĩnh viễn.";
+
+function bulkDeleteToast({ deleted, hidden }: BookBulkResult): string {
+  if (deleted && hidden) return `Đã xóa ${deleted}, ẩn ${hidden} cuốn (có đơn hàng)`;
+  if (hidden) return `Đã ẩn ${hidden} cuốn (có đơn hàng)`;
+  return `Đã xóa ${deleted} cuốn`;
+}
+
 export function InventoryHome() {
-  const router = useRouter();
-  const { filters, setFilter } = useAdminInventoryFilters();
+  const {
+    filters,
+    status,
+    conditionKey,
+    setFilter,
+    resetFilters,
+    activeCount,
+    hasFilters,
+  } = useAdminInventoryFilters();
   const [searchInput, setSearchInput] = useState(filters.text ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
-  const [deleting, setDeleting] = useState<AdminInventoryRow | null>(null);
-  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [selectMode, setSelectMode] = useState(false);
+  // Single-row delete target, or "bulk" for the selection.
+  const [confirming, setConfirming] = useState<AdminInventoryRow | "bulk" | null>(null);
 
   useEffect(() => {
     setSearchInput(filters.text ?? "");
@@ -42,23 +61,32 @@ export function InventoryHome() {
 
   useEffect(() => {
     const t = window.setTimeout(() => {
-      if (searchInput !== (filters.text ?? "")) setFilter("q", searchInput);
+      if (searchInput.trim() !== (filters.text ?? "")) setFilter("q", searchInput.trim());
     }, 300);
     return () => window.clearTimeout(t);
   }, [searchInput, filters.text, setFilter]);
+
+  // Never act on rows the admin can no longer see: reset selection on filter/tab/page change.
+  const filtersKey = JSON.stringify(filters);
+  useEffect(() => {
+    setSelected(new Set());
+  }, [filtersKey]);
 
   const overview = useInventoryOverview();
   const categories = useAdminCategories();
   const books = useAdminBooks(filters);
   const author = useAdminAuthor(filters.author_id);
   const remove = useDeleteBook();
+  const bulk = useBulkBooks();
 
   const rows = useMemo(
     () => (books.data?.items ?? []).map(toAdminInventoryRow),
     [books.data?.items],
   );
+  const total = books.data?.total ?? 0;
+  const page = filters.page ?? 1;
 
-  const total = books.data?.total ?? overview.data?.total_titles ?? 0;
+  const clearSelection = () => setSelected(new Set());
 
   const toggleRow = (id: number) => {
     setSelected((prev) => {
@@ -73,293 +101,241 @@ export function InventoryHome() {
     setSelected((prev) => {
       const allOnPage = ids.every((id) => prev.has(id));
       const next = new Set(prev);
-      if (allOnPage) ids.forEach((id) => next.delete(id));
-      else ids.forEach((id) => next.add(id));
+      ids.forEach((id) => (allOnPage ? next.delete(id) : next.add(id)));
       return next;
     });
   };
 
-  const runBatchDelete = async () => {
-    const ids = [...selected];
-    for (const id of ids) {
-      try {
-        await remove.mutateAsync(id);
-      } catch (e) {
-        toast.error(errorMessage(e));
-      }
-    }
-    toast.success(`Đã xử lý ${ids.length} cuốn`);
-    setSelected(new Set());
-    setBatchDeleteOpen(false);
+  const setSelectModeAndClear = (on: boolean) => {
+    setSelectMode(on);
+    if (!on) clearSelection();
   };
 
-  const runDelete = async () => {
-    if (!deleting) return;
+  /** Removing every row of the last page: step back so the list isn't empty. */
+  const stepBackIfEmptied = (removed: number) => {
+    if (removed >= rows.length && page > 1) setFilter("page", String(page - 1));
+  };
+
+  const runBulk = async (action: InventoryBulkAction) => {
+    const ids = [...selected];
     try {
-      const res = await remove.mutateAsync(deleting.id);
-      toast.success(
-        res.hidden
-          ? `Sách "${deleting.title}" đã có đơn hàng nên được ẩn thay vì xoá`
-          : `Đã xoá sách "${deleting.title}"`,
-      );
-      setSelected((prev) => {
-        const next = new Set(prev);
-        next.delete(deleting.id);
-        return next;
-      });
-      // Deleting the only row of the last page: step back so the table isn't empty.
-      const page = filters.page ?? 1;
-      if (rows.length === 1 && page > 1) setFilter("page", String(page - 1));
-      setDeleting(null);
+      const res = await bulk.mutateAsync({ ids, action });
+      if (action === "hide") toast.success(`Đã ẩn ${res.updated} cuốn`);
+      else if (action === "show") toast.success(`Đã hiện ${res.updated} cuốn trên shop`);
+      else {
+        toast.success(bulkDeleteToast(res));
+        stepBackIfEmptied(res.deleted);
+      }
+      clearSelection();
+      setSelectMode(false);
     } catch (e) {
       toast.error(errorMessage(e));
     }
   };
 
-  const ov = overview.data;
+  const runDelete = async (row: AdminInventoryRow) => {
+    try {
+      const res = await remove.mutateAsync(row.id);
+      toast.success(
+        res.hidden ? "Sách đã có đơn hàng nên được ẩn thay vì xóa" : "Đã xóa sách khỏi kho",
+      );
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(row.id);
+        return next;
+      });
+      if (res.deleted) stepBackIfEmptied(1);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  };
+
+  const onConfirm = async () => {
+    if (confirming === "bulk") await runBulk("delete");
+    else if (confirming) await runDelete(confirming);
+    setConfirming(null);
+  };
+
+  const onBulkAction = (action: InventoryBulkAction) => {
+    if (action === "delete") setConfirming("bulk");
+    else void runBulk(action);
+  };
+
+  const setPage = (p: number) => {
+    setFilter("page", String(p));
+    window.scrollTo({ top: 0 });
+  };
+
+  const loading = books.isLoading;
+  const empty = !loading && !books.error && rows.length === 0;
+
+  let emptyBlock: React.ReactNode = null;
+  if (empty) {
+    if (overview.data?.total_titles === 0) {
+      emptyBlock = (
+        <ListMessage
+          icon="inventory_2"
+          title="Chưa có sách trong kho"
+          body="Sách bạn thêm sẽ hiện ở đây kèm số lượng tồn và trạng thái hiển thị."
+          action={
+            <LinkButton href="/admin/books/new" className="gap-1">
+              <MaterialIcon name="add" className="text-[18px]" />
+              Thêm sách đầu tiên
+            </LinkButton>
+          }
+        />
+      );
+    } else if (hasFilters) {
+      emptyBlock = (
+        <ListMessage
+          icon="search_off"
+          title="Không tìm thấy sách phù hợp"
+          body="Thử từ khóa khác hoặc bỏ bớt bộ lọc."
+          action={<OutlineButton onClick={resetFilters}>Xóa bộ lọc</OutlineButton>}
+        />
+      );
+    } else {
+      const tab = STOCK_TABS.find((t) => t.value === status);
+      emptyBlock = <ListMessage icon="check" title={tab?.empty ?? "Không có sách"} />;
+    }
+  }
 
   return (
-    <div className="mx-auto flex w-full flex-col gap-space-lg px-space-xl py-space-lg">
-      <div className="flex flex-col justify-between gap-space-md lg:flex-row lg:items-end">
-        <div className="space-y-space-xs">
-          <nav className="flex items-center gap-space-xs text-label-sm text-on-surface-variant">
-            <span className="flex items-center gap-1">
-              <MaterialIcon name="store" className="text-[14px]" />
-              Quản lý cửa hàng
-            </span>
-            <span className="text-outline-variant">/</span>
-            <span className="font-semibold text-primary">Quản lý sách</span>
-          </nav>
-          <div className="pt-1">
-            <h1 className="text-headline-xl tracking-tight text-primary">
-              Quản lý sách
-            </h1>
-            <p className="mt-1 max-w-3xl text-body-md text-on-surface-variant">
-              {ov
-                ? `Theo dõi ${formatCompactCount(ov.total_copies)} đầu sách xưa và nay, quản lý tình trạng hao mòn, định giá và kệ trưng bày.`
-                : "Theo dõi kho sách cũ và quản lý trưng bày."}
-            </p>
-          </div>
-        </div>
-        <LinkButton href="/admin/books/new" className="self-start lg:self-auto">
-          + Thêm sách
-        </LinkButton>
-      </div>
+    <div className="mx-auto flex w-full flex-col gap-space-lg px-space-md py-space-lg md:px-space-xl">
+      <InventoryHeader overview={overview.data} isLoading={overview.isLoading} />
 
-      <div className="grid grid-cols-1 gap-space-md sm:grid-cols-2 xl:grid-cols-4">
-        <InventoryKpiCard
-          isLoading={overview.isLoading}
-          label="Tổng số sách trong kho"
-          icon="menu_book"
-          value={
-            ov ? (
-              <>
-                {formatCompactCount(ov.total_copies)}{" "}
-                <span className="text-headline-sm font-normal text-on-surface-variant">
-                  cuốn
-                </span>
-              </>
-            ) : null
-          }
-          footer={
-            ov ? (
-              <div className="flex items-center gap-space-xs">
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-secondary-container px-2 py-0.5 text-label-sm text-on-secondary-container">
-                  <MaterialIcon name="trending_up" className="text-[13px]" />+
-                  {ov.intake_this_week} cuốn
-                </span>
-                <span className="text-body-sm text-on-surface-variant">
-                  nhập kho trong tuần này
-                </span>
-              </div>
-            ) : null
-          }
-        />
-        <InventoryKpiCard
-          isLoading={overview.isLoading}
-          accent="secondary"
-          label="Tổng số thể loại sách"
-          icon="account_tree"
-          value={
-            ov ? (
-              <>
-                <span className="text-secondary">
-                  {formatCompactCount(ov.category_count)}
-                </span>{" "}
-                <span className="text-headline-sm font-normal text-on-surface-variant">
-                  thể loại
-                </span>
-              </>
-            ) : null
-          }
-          footer={
-            ov ? (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-body-sm">
-                  <span className="text-on-surface-variant">
-                    {formatCompactCount(ov.total_copies)} /{" "}
-                    {formatCompactCount(ov.total_copies)} cuốn
-                  </span>
-                  <span className="font-label-sm font-semibold text-secondary">
-                    {ov.categorized_pct}% sách đã gắn thể loại
-                  </span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-surface-container">
-                  <div
-                    className="h-full rounded-full bg-secondary transition-all"
-                    style={{ width: `${Math.min(100, ov.categorized_pct)}%` }}
-                  />
-                </div>
-              </div>
-            ) : null
-          }
-        />
-        <InventoryKpiCard
-          isLoading={overview.isLoading}
-          accent="tertiary"
-          label="Ước tính giá trị lưu kho"
-          icon="payments"
-          value={
-            ov ? (
-              <>
-                {(ov.estimated_stock_value / 1_000_000).toFixed(1)}{" "}
-                <span className="text-headline-sm font-normal text-on-surface-variant">
-                  triệu đ
-                </span>
-              </>
-            ) : null
-          }
-          footer={
-            <div className="flex items-center gap-space-xs text-body-sm text-on-surface-variant">
-              <MaterialIcon
-                name="verified"
-                className="text-[16px] text-tertiary-fixed-dim"
-              />
-              Dựa trên giá vốn × số lượng tồn
-            </div>
-          }
-        />
-        <InventoryKpiCard
-          isLoading={overview.isLoading}
-          label="Tình trạng tốt (≥80%)"
-          icon="auto_fix_high"
-          value={
-            ov ? (
-              <>
-                {formatCompactCount(ov.good_condition_copies)}{" "}
-                <span className="text-headline-sm font-normal text-on-surface-variant">
-                  cuốn
-                </span>
-              </>
-            ) : null
-          }
-          footer={
-            ov ? (
-              <div className="flex items-center justify-between text-body-sm">
-                <span className="text-on-surface-variant">
-                  Chiếm {ov.good_condition_pct}% tổng kho
-                </span>
-                <span className="rounded-full bg-surface-container px-2 py-0.5 text-label-sm font-semibold text-primary">
-                  Luân chuyển cao
-                </span>
-              </div>
-            ) : null
-          }
-        />
-      </div>
-
-      {filters.author_id && (
-        <div className="flex items-center gap-space-sm">
-          <span className="inline-flex items-center gap-1 rounded-full bg-secondary-container py-1 pl-3 pr-1.5 text-label-lg text-on-secondary-container">
-            Tác giả: {author.data?.name ?? "…"}
-            <button
-              type="button"
-              aria-label="Bỏ lọc tác giả"
-              className="inline-flex size-6 items-center justify-center rounded-full hover:bg-on-secondary-container/10"
-              onClick={() => setFilter("author_id", "")}
-            >
-              <MaterialIcon name="close" className="text-[16px]" />
-            </button>
-          </span>
-        </div>
-      )}
+      <InventoryStatusStrip
+        overview={overview.data}
+        isLoading={overview.isLoading}
+        status={status}
+        onStatusChange={(s) => setFilter("status", s)}
+      />
 
       <InventoryToolbar
         search={searchInput}
         onSearchChange={setSearchInput}
         categorySlug={filters.category ?? ""}
         onCategoryChange={(v) => setFilter("cat", v)}
-        conditionKey={
-          filters.condition_min === 95
-            ? "mint"
-            : filters.condition_min === 80
-              ? "good"
-              : filters.condition_min === 60
-                ? "fair"
-                : filters.condition_min === 10
-                  ? "vintage"
-                  : ""
-        }
+        conditionKey={conditionKey}
         onConditionChange={(k) => setFilter("cond", k)}
         sort={filters.sort ?? "newest"}
-        onSortChange={(v) => setFilter("sort", v)}
+        onSortChange={(v) => setFilter("sort", v === "newest" ? "" : v)}
         categories={categories.data ?? []}
-        filteredCount={rows.length}
-        total={total}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
-
-      <section className="w-full overflow-hidden rounded-serene-lg bg-surface-container-lowest shadow-[0_8px_30px_-6px_rgba(27,77,62,0.06),0_2px_8px_-2px_rgba(0,0,0,0.04)]">
-        <div className="flex flex-col gap-4 p-space-xl">
-          <InventoryTable
-            rows={rows}
-            selectedIds={selected}
-            onToggleRow={toggleRow}
-            onToggleAll={toggleAll}
-            isLoading={books.isLoading}
-            error={books.error}
-            onEdit={(id) => router.push(`/admin/books/${id}`)}
-            onDelete={setDeleting}
-          />
-        </div>
-        <InventoryBatchFooter
-          selectedCount={selected.size}
-          onBatchDiscount={() =>
-            toast("Cập nhật giảm giá hàng loạt — chưa hỗ trợ")
-          }
-          onBatchDelete={() => setBatchDeleteOpen(true)}
-        />
-      </section>
-      <TablePagination
-        {...getPageInfo(filters.page ?? 1, filters.size ?? 20, total)}
-        setPage={(p) => setFilter("page", String(p))}
-        itemLabel="cuốn"
-      />
-
-      <ConfirmDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null);
+        authorName={filters.author_id ? (author.data?.name ?? "…") : undefined}
+        onClearAuthor={() => setFilter("author_id", "")}
+        activeCount={activeCount}
+        onReset={() => {
+          setSearchInput("");
+          resetFilters();
         }}
-        title="Xoá sách?"
-        message={`Xoá sách "${deleting?.title ?? ""}" khỏi kho. Sách đã có đơn hàng sẽ được ẩn thay vì xoá.`}
-        destructive
-        confirmLabel="Xoá"
-        loading={remove.isPending}
-        onConfirm={() => void runDelete()}
       />
 
+      <section aria-label="Danh sách sách" className="flex flex-col gap-space-md">
+        {books.error ? (
+          <ListMessage
+            icon="cloud_off"
+            title="Không tải được danh sách sách"
+            body="Kiểm tra kết nối tới máy chủ rồi thử lại."
+            action={<OutlineButton onClick={() => void books.refetch()}>Thử lại</OutlineButton>}
+          />
+        ) : empty ? (
+          emptyBlock
+        ) : (
+          <>
+            <div className="hidden md:block">
+              <InventoryTable
+                rows={rows}
+                selectedIds={selected}
+                onToggleRow={toggleRow}
+                onToggleAll={toggleAll}
+                isLoading={loading}
+                onDelete={setConfirming}
+                onAuthorClick={(id) => setFilter("author_id", String(id))}
+              />
+            </div>
+            <div className="md:hidden">
+              <InventoryCardList
+                rows={rows}
+                total={total}
+                selectedIds={selected}
+                onToggleRow={toggleRow}
+                isLoading={loading}
+                onDelete={setConfirming}
+                selectMode={selectMode}
+                onSelectModeChange={setSelectModeAndClear}
+              />
+            </div>
+          </>
+        )}
+
+        <InventoryBulkBar
+          selectedCount={selected.size}
+          onAction={onBulkAction}
+          onClear={() => setSelectModeAndClear(false)}
+          pending={bulk.isPending}
+        />
+
+        {!loading && !books.error && total > 0 && (
+          <TablePagination
+            {...getPageInfo(page, filters.size ?? 20, total)}
+            setPage={setPage}
+            itemLabel="cuốn"
+          />
+        )}
+      </section>
+
       <ConfirmDialog
-        open={batchDeleteOpen}
-        onOpenChange={setBatchDeleteOpen}
-        title="Xóa khỏi kho?"
-        message={`Xóa hoặc ẩn ${selected.size} cuốn đã chọn.`}
+        open={confirming !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirming(null);
+        }}
+        title={
+          confirming === "bulk"
+            ? `Xóa ${selected.size} cuốn khỏi kho?`
+            : `Xóa «${confirming?.title ?? ""}» khỏi kho?`
+        }
+        message={DELETE_NOTE}
         destructive
-        confirmLabel="Xóa"
-        loading={remove.isPending}
-        onConfirm={() => void runBatchDelete()}
+        cancelLabel="Hủy"
+        confirmLabel="Xóa khỏi kho"
+        loading={remove.isPending || bulk.isPending}
+        onConfirm={() => void onConfirm()}
       />
     </div>
+  );
+}
+
+function ListMessage({
+  icon,
+  title,
+  body,
+  action,
+}: {
+  icon: string;
+  title: string;
+  body?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-space-sm rounded-lg bg-surface-container-lowest px-space-lg py-space-xl text-center shadow-pod">
+      <span className="grid size-14 place-items-center rounded-full bg-surface-container-low text-on-surface-variant">
+        <MaterialIcon name={icon} className="text-[28px]" />
+      </span>
+      <h2 className="text-headline-sm text-on-surface">{title}</h2>
+      {body && <p className="max-w-sm text-body-md text-on-surface-variant">{body}</p>}
+      {action && <div className="mt-space-xs">{action}</div>}
+    </div>
+  );
+}
+
+function OutlineButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-10 rounded-full border border-outline-variant px-space-md text-label-lg font-semibold text-primary hover:bg-surface-container-low"
+    >
+      {children}
+    </button>
   );
 }

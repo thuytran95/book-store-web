@@ -6,7 +6,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Input } from "@/components/ui/input";
-import { Pagination } from "@/components/ui/pagination";
+import { TablePagination } from "@/components/shared/table-pagination";
+import { getPageInfo } from "@/lib/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { hasCode } from "@/lib/api/errors";
@@ -25,7 +26,6 @@ export function UsersPage() {
   const [target, setTarget] = useState<Row | null>(null);
   const { data, isLoading, error } = useAdminUsers(search, page);
   const lock = useSetUserLocked();
-  const pageCount = data ? Math.max(1, Math.ceil(data.total / data.size)) : 1;
 
   return (
     <div className="grid gap-4">
@@ -93,7 +93,13 @@ export function UsersPage() {
           </TableBody>
         </Table>
       )}
-      <Pagination page={page} pageCount={pageCount} onChange={setPage} />
+      {data && data.total > 0 && (
+        <TablePagination
+          {...getPageInfo(page, data.size, data.total)}
+          setPage={setPage}
+          itemLabel="người dùng"
+        />
+      )}
 
       <ConfirmDialog
         open={target !== null}

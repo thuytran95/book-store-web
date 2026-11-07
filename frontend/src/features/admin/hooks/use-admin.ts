@@ -4,6 +4,8 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
+import { errorMessage } from "@/lib/error-messages";
+import { toast } from "@/lib/toast";
 
 type S = components["schemas"];
 export type BookCreate = S["BookCreate"];
@@ -12,6 +14,10 @@ export type CategoryRead = S["CategoryRead"];
 export type AuthorRead = S["AuthorRead"];
 export type AuthorRef = S["AuthorRef"];
 export type OrderStatus = S["OrderStatus"];
+export type BookAdminRead = S["BookAdminRead"];
+export type BookBulkAction = S["BookBulkAction"];
+export type BookBulkResult = S["BookBulkResult"];
+export type StockStatus = S["StockStatus"];
 
 const invalidate = (qc: ReturnType<typeof useQueryClient>, ...keys: string[]) =>
   Promise.all(keys.map((k) => qc.invalidateQueries({ queryKey: [k] })));
@@ -23,8 +29,10 @@ export type AdminBookFilters = {
   category?: string;
   author_id?: number;
   condition_min?: number;
+  condition_max?: number;
   in_stock?: boolean;
   visible?: boolean;
+  stock?: StockStatus;
   sort?: S["BookSort"];
   page?: number;
   size?: number;
@@ -105,6 +113,36 @@ export function useDeleteBook() {
   });
 }
 
+type BookPage = S["Page_BookAdminRead_"];
+type BooksSnapshot = [readonly unknown[], BookPage | undefined][];
+
+/** Optimistically patches one book in every cached admin list; returns the snapshot for rollback. */
+async function patchCachedBook(
+  qc: ReturnType<typeof useQueryClient>,
+  id: number,
+  patch: Partial<BookAdminRead>,
+): Promise<BooksSnapshot> {
+  await qc.cancelQueries({ queryKey: ["admin", "books"] });
+  const snapshot = qc.getQueriesData<BookPage>({ queryKey: ["admin", "books"] });
+  qc.setQueriesData<BookPage>({ queryKey: ["admin", "books"] }, (page) =>
+    page
+      ? { ...page, items: page.items.map((b) => (b.id === id ? { ...b, ...patch } : b)) }
+      : page,
+  );
+  return snapshot;
+}
+
+function restoreBooks(qc: ReturnType<typeof useQueryClient>, snapshot?: BooksSnapshot) {
+  snapshot?.forEach(([key, data]) => qc.setQueryData(key, data));
+}
+
+const refreshInventory = (qc: ReturnType<typeof useQueryClient>) =>
+  Promise.all([
+    invalidate(qc, "admin", "books", "book"),
+    qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+  ]);
+
+/** Show/hide on the shop. Optimistic; rolls back on error (caller shows the toast). */
 export function useToggleVisible() {
   const qc = useQueryClient();
   return useMutation({
@@ -115,11 +153,44 @@ export function useToggleVisible() {
       });
       return data!;
     },
-    onSuccess: () =>
-      Promise.all([
-        invalidate(qc, "admin", "books", "book"),
-        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
-      ]),
+    onMutate: ({ id, visible }) => patchCachedBook(qc, id, { is_visible: visible }),
+    onError: (_e, _v, snapshot) => restoreBooks(qc, snapshot),
+    onSettled: () => refreshInventory(qc),
+  });
+}
+
+/**
+ * Inline stock edit. Optimistic; on error rolls back and toasts
+ * (`QUANTITY_BELOW_PENDING` → "Không thể giảm dưới số bản đang chờ xác nhận."). No success toast.
+ */
+export function useSetBookQuantity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, quantity }: { id: number; quantity: number }) => {
+      const { data } = await api.PATCH("/api/v1/admin/books/{book_id}", {
+        params: { path: { book_id: id } },
+        body: { quantity },
+      });
+      return data!;
+    },
+    onMutate: ({ id, quantity }) => patchCachedBook(qc, id, { quantity }),
+    onError: (e, _v, snapshot) => {
+      restoreBooks(qc, snapshot);
+      toast.error(errorMessage(e));
+    },
+    onSettled: () => refreshInventory(qc),
+  });
+}
+
+/** Hide / show / delete many books in one request. Returns `{ updated, deleted, hidden }`. */
+export function useBulkBooks() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: { ids: number[]; action: BookBulkAction }) => {
+      const { data } = await api.POST("/api/v1/admin/books/bulk", { body });
+      return data!;
+    },
+    onSuccess: () => refreshInventory(qc),
   });
 }
 

@@ -2,58 +2,102 @@ import type { components } from "@/lib/api/schema";
 import { formatStockCode } from "@/lib/format";
 
 type BookAdminRead = components["schemas"]["BookAdminRead"];
-
-export type ShelfStatus = "on_shelf" | "held" | "sold" | "hidden";
+type AuthorRef = components["schemas"]["AuthorRef"];
 
 export type AdminInventoryRow = {
   id: number;
   stockCode: string;
   title: string;
+  slug: string;
   author: string | null;
-  publisher: string | null;
-  publishedYear: number | null;
+  authors: AuthorRef[];
   coverUrl: string | null;
   categoryName: string;
   conditionPct: number;
-  conditionNote: string | null;
   salePrice: number;
-  shelfStatus: ShelfStatus;
-  slug: string;
+  quantity: number;
+  /** Copies held by pending orders (`quantity − available`). */
+  pending: number;
+  isVisible: boolean;
 };
-
-/** `held`: every copy is tied up in pending orders (in stock, but not available). */
-export function shelfStatusForBook(book: BookAdminRead): ShelfStatus {
-  if (!book.is_visible) return "hidden";
-  if (book.quantity === 0) return "sold";
-  if (book.available === 0) return "held";
-  return "on_shelf";
-}
 
 export function toAdminInventoryRow(book: BookAdminRead): AdminInventoryRow {
   return {
     id: book.id,
     stockCode: formatStockCode(book.id),
     title: book.title,
+    slug: book.slug,
     author: book.author,
-    publisher: book.publisher,
-    publishedYear: book.published_year,
+    authors: book.authors,
     coverUrl: book.cover_url ?? book.images[0]?.url ?? null,
     categoryName: book.category.name,
     conditionPct: book.condition_pct,
-    conditionNote: book.description,
     salePrice: book.price,
-    shelfStatus: shelfStatusForBook(book),
-    slug: book.slug,
+    quantity: book.quantity,
+    pending: Math.max(0, book.quantity - book.available),
+    isVisible: book.is_visible,
   };
 }
 
-export const CONDITION_FILTER_MIN: Record<string, number | undefined> = {
-  "": undefined,
-  mint: 95,
-  good: 80,
-  fair: 60,
-  vintage: 10,
+// ---------------------------------------------------------------- Status tabs
+
+export type StockTab = "" | "in_stock" | "out_of_stock" | "hidden";
+
+export const STOCK_TABS: {
+  value: StockTab;
+  label: string;
+  dot: string;
+  empty: string;
+}[] = [
+  { value: "", label: "Tất cả", dot: "", empty: "Chưa có sách trong kho" },
+  {
+    value: "in_stock",
+    label: "Còn hàng",
+    dot: "bg-secondary",
+    empty: "Không có sách còn hàng",
+  },
+  {
+    value: "out_of_stock",
+    label: "Hết hàng",
+    dot: "bg-destructive",
+    empty: "Không có sách hết hàng",
+  },
+  {
+    value: "hidden",
+    label: "Đang ẩn",
+    dot: "bg-outline",
+    empty: "Không có sách đang ẩn",
+  },
+];
+
+export function parseStockTab(raw: string | null): StockTab {
+  return STOCK_TABS.some((t) => t.value === raw) ? (raw as StockTab) : "";
+}
+
+// ---------------------------------------------------------------- Condition buckets
+
+export type ConditionKey = "mint" | "good" | "fair" | "old";
+
+export const CONDITION_FILTER: Record<
+  ConditionKey,
+  { min?: number; max?: number; label: string }
+> = {
+  mint: { min: 95, label: "Rất mới (≥95%)" },
+  good: { min: 80, max: 94, label: "Tốt (≥80%)" },
+  fair: { min: 60, max: 79, label: "Khá (≥60%)" },
+  old: { max: 59, label: "Cũ (<60%)" },
 };
+
+/** Legacy URL keys still accepted in `?cond=`. */
+export const CONDITION_ALIASES: Record<string, ConditionKey> = { vintage: "old" };
+
+export function parseConditionKey(raw: string | null): ConditionKey | "" {
+  if (!raw) return "";
+  if (raw in CONDITION_FILTER) return raw as ConditionKey;
+  return CONDITION_ALIASES[raw] ?? "";
+}
+
+// ---------------------------------------------------------------- Sort
 
 export type InventorySort =
   | "newest"
@@ -64,8 +108,8 @@ export type InventorySort =
 
 export const SORT_OPTIONS: { value: InventorySort; label: string }[] = [
   { value: "newest", label: "Mới nhập gần đây" },
-  { value: "title_asc", label: "Tựa sách (A-Z)" },
-  { value: "price_asc", label: "Giá bán (Thấp → Cao)" },
-  { value: "price_desc", label: "Giá bán (Cao → Thấp)" },
+  { value: "title_asc", label: "Tên sách A–Z" },
+  { value: "price_asc", label: "Giá thấp đến cao" },
+  { value: "price_desc", label: "Giá cao đến thấp" },
   { value: "condition_desc", label: "Tình trạng tốt nhất" },
 ];

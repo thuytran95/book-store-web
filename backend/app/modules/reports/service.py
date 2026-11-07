@@ -6,6 +6,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.catalog.models import Book, Category
+from app.modules.orders.models import Order, OrderStatus
 from app.modules.reports.schemas import InventoryOverview
 
 
@@ -51,6 +52,21 @@ async def inventory_overview(session: AsyncSession) -> InventoryOverview:
         )
         or 0
     )
+    in_stock, out_of_stock, hidden = (
+        await session.execute(
+            select(
+                func.count(Book.id).filter(Book.is_visible.is_(True), Book.quantity > 0),
+                func.count(Book.id).filter(Book.is_visible.is_(True), Book.quantity == 0),
+                func.count(Book.id).filter(Book.is_visible.is_(False)),
+            )
+        )
+    ).one()
+    pending_orders = int(
+        await session.scalar(
+            select(func.count(Order.id)).where(Order.status == OrderStatus.pending)
+        )
+        or 0
+    )
     return InventoryOverview(
         total_copies=total_copies,
         total_titles=total_titles,
@@ -60,5 +76,9 @@ async def inventory_overview(session: AsyncSession) -> InventoryOverview:
         good_condition_copies=good_copies,
         good_condition_pct=round(good_pct, 1),
         intake_this_week=intake,
+        in_stock_titles=int(in_stock),
+        out_of_stock_titles=int(out_of_stock),
+        hidden_titles=int(hidden),
+        pending_orders=pending_orders,
     )
 

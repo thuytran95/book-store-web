@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Noto_Sans_JP } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 
-const notoSansJp = Noto_Sans_JP({
+// Same family as the UI prototypes (docs/prototype/*/code.html).
+const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700", "800"],
@@ -37,7 +38,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${notoSansJp.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${plusJakartaSans.variable} ${geistMono.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
         <Toaster richColors position="top-center" />

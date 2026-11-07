@@ -227,6 +227,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/books/bulk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Bulk Books */
+        post: operations["bulk_books_api_v1_admin_books_bulk_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/books/{book_id}": {
         parameters: {
             query?: never;
@@ -599,6 +616,35 @@ export interface components {
             quantity: number;
         };
         /**
+         * BookBulkAction
+         * @enum {string}
+         */
+        BookBulkAction: "hide" | "show" | "delete";
+        /** BookBulkRequest */
+        BookBulkRequest: {
+            /** Ids */
+            ids: number[];
+            action: components["schemas"]["BookBulkAction"];
+        };
+        /** BookBulkResult */
+        BookBulkResult: {
+            /**
+             * Updated
+             * @default 0
+             */
+            updated: number;
+            /**
+             * Deleted
+             * @default 0
+             */
+            deleted: number;
+            /**
+             * Hidden
+             * @default 0
+             */
+            hidden: number;
+        };
+        /**
          * BookCard
          * @description List/grid item.
          */
@@ -837,6 +883,14 @@ export interface components {
             good_condition_pct: number;
             /** Intake This Week */
             intake_this_week: number;
+            /** In Stock Titles */
+            in_stock_titles: number;
+            /** Out Of Stock Titles */
+            out_of_stock_titles: number;
+            /** Hidden Titles */
+            hidden_titles: number;
+            /** Pending Orders */
+            pending_orders: number;
         };
         /** LoginIn */
         LoginIn: {
@@ -1019,6 +1073,12 @@ export interface components {
              */
             at: string;
         };
+        /**
+         * StockStatus
+         * @description Admin list tabs; mutually exclusive (hidden wins over stock).
+         * @enum {string}
+         */
+        StockStatus: "in_stock" | "out_of_stock" | "hidden";
         /** TransitionIn */
         TransitionIn: {
             to: components["schemas"]["OrderStatus"];
@@ -1425,8 +1485,10 @@ export interface operations {
                 price_min?: number | null;
                 price_max?: number | null;
                 condition_min?: number | null;
+                condition_max?: number | null;
                 in_stock?: boolean;
                 visible?: boolean | null;
+                stock?: components["schemas"]["StockStatus"] | null;
                 sort?: components["schemas"]["BookSort"];
                 page?: number;
                 size?: number;
@@ -1497,8 +1559,10 @@ export interface operations {
                 price_min?: number | null;
                 price_max?: number | null;
                 condition_min?: number | null;
+                condition_max?: number | null;
                 in_stock?: boolean;
                 visible?: boolean | null;
+                stock?: components["schemas"]["StockStatus"] | null;
                 sort?: components["schemas"]["BookSort"];
                 page?: number;
                 size?: number;
@@ -1553,6 +1617,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BookAdminRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bulk_books_api_v1_admin_books_bulk_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookBulkRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookBulkResult"];
                 };
             };
             /** @description Validation Error */

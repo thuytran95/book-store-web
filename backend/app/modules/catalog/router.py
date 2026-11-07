@@ -11,6 +11,7 @@ from app.modules.catalog.schemas import (
     BookQuery,
     BookSort,
     CategoryRead,
+    StockStatus,
 )
 
 router = APIRouter(tags=["catalog"])
@@ -23,8 +24,10 @@ def book_query(
     price_min: Annotated[int | None, Query(ge=0)] = None,
     price_max: Annotated[int | None, Query(ge=0)] = None,
     condition_min: Annotated[int | None, Query(ge=10, le=100)] = None,
+    condition_max: Annotated[int | None, Query(ge=10, le=100)] = None,
     in_stock: bool = False,
     visible: bool | None = None,
+    stock: StockStatus | None = None,
     sort: BookSort = BookSort.newest,
     page: Annotated[int, Query(ge=1)] = 1,
     size: Annotated[int, Query(ge=1, le=100)] = 20,
@@ -32,7 +35,8 @@ def book_query(
     return BookQuery(
         text=text, category_slug=category, author_id=author_id,
         price_min=price_min, price_max=price_max,
-        condition_min=condition_min, in_stock_only=in_stock, visible=visible,
+        condition_min=condition_min, condition_max=condition_max,
+        in_stock_only=in_stock, visible=visible, stock=stock,
         sort=sort, page=page, size=size,
     )
 
