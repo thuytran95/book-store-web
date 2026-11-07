@@ -1,11 +1,11 @@
-"""Catalog search: full-text + unaccent (Vietnamese) + pg_trgm typo tolerance.
+"""Catalog search: unaccent (Vietnamese) word matching + pg_trgm typo tolerance.
 
 Callers only see `BookQuery -> (books, total)`.
 """
 
 import re
 
-from sqlalchemy import Select, and_, func, literal, or_, select
+from sqlalchemy import Integer, Select, and_, cast, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -19,24 +19,30 @@ def _unaccent(col):
     return func.immutable_unaccent(col)
 
 
-def _tsquery_text(text: str) -> str | None:
-    tokens = re.findall(r"\w+", text, flags=re.UNICODE)
-    return " & ".join(f"{t}:*" for t in tokens) or None  # \w only: safe for to_tsquery
+def _tokens(text: str) -> list[str]:
+    return re.findall(r"[^\W_]+", text.lower())  # letters/digits only: no LIKE wildcards
 
 
 def apply_text(stmt: Select, text: str):
-    """Returns (stmt, rank_expression)."""
-    ts = _tsquery_text(text)
-    plain = func.immutable_unaccent(literal(text.lower().strip()))
-    title_sim = func.similarity(_unaccent(func.lower(Book.title)), plain)
-    author_sim = func.similarity(_unaccent(func.lower(func.coalesce(Book.author, ""))), plain)
-    fuzzy = func.greatest(title_sim, author_sim)
+    """Returns (stmt, rank_expression).
+
+    Matches when every word appears (accent-insensitive) in title/author, or when the whole
+    text is close enough to the title/author (typo tolerance).
+    """
+    plain = _unaccent(literal(text.lower().strip()))
+    title = _unaccent(func.lower(Book.title))
+    author = _unaccent(func.lower(func.coalesce(Book.author, "")))
+    fuzzy = func.greatest(func.similarity(title, plain), func.similarity(author, plain))
     conditions = [fuzzy > TRIGRAM_THRESHOLD]
     rank = fuzzy
-    if ts:
-        query = func.to_tsquery("simple", func.immutable_unaccent(literal(ts)))
-        conditions.append(Book.search_vector.op("@@")(query))
-        rank = fuzzy + func.ts_rank(Book.search_vector, query)
+    tokens = _tokens(text)
+    if tokens:
+        haystack = func.concat(title, " ", author)
+        all_words = and_(*(
+            haystack.like(func.concat("%", _unaccent(literal(t)), "%")) for t in tokens
+        ))
+        conditions.append(all_words)
+        rank = fuzzy + cast(all_words, Integer)
     return stmt.where(or_(*conditions)), rank
 
 
@@ -55,9 +61,9 @@ def build_filters(q: BookQuery, *, public: bool = True) -> list:
             select(BookAuthor.book_id).where(BookAuthor.author_id == q.author_id)
         ))
     if q.price_min is not None:
-        filters.append(Book.sale_price >= q.price_min)
+        filters.append(Book.price >= q.price_min)
     if q.price_max is not None:
-        filters.append(Book.sale_price <= q.price_max)
+        filters.append(Book.price <= q.price_max)
     if q.condition_min is not None:
         filters.append(Book.condition_pct >= q.condition_min)
     if q.in_stock_only:
@@ -76,9 +82,9 @@ async def search_books(
     total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
 
     if q.sort == BookSort.price_asc:
-        order = [Book.sale_price.asc(), Book.id.asc()]
+        order = [Book.price.asc(), Book.id.asc()]
     elif q.sort == BookSort.price_desc:
-        order = [Book.sale_price.desc(), Book.id.desc()]
+        order = [Book.price.desc(), Book.id.desc()]
     elif q.sort == BookSort.title_asc:
         order = [_unaccent(Book.title).asc(), Book.id.asc()]
     elif q.sort == BookSort.condition_desc:

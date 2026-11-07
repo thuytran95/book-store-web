@@ -31,7 +31,7 @@ async def inventory_overview(session: AsyncSession) -> InventoryOverview:
     categorized_pct = (categorized / total_titles * 100.0) if total_titles else 100.0
     stock_value = int(
         await session.scalar(
-            select(func.coalesce(func.sum(Book.sale_price * Book.quantity), 0))
+            select(func.coalesce(func.sum(Book.price * Book.quantity), 0))
         )
         or 0
     )

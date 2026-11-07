@@ -56,7 +56,7 @@ def _card_fields(book: Book, available: int) -> dict:
         "slug": book.slug,
         "title": book.title,
         "author": book.author,
-        "sale_price": book.sale_price,
+        "price": book.price,
         "condition_pct": book.condition_pct,
         "cover_url": book.images[0].url if book.images else None,
         "available": available,
@@ -173,7 +173,7 @@ async def update_book(session: AsyncSession, book_id: int, data: BookUpdate) -> 
     if "category_id" in changes and changes["category_id"] is not None:
         await _require_category(session, changes["category_id"])
     for key, value in changes.items():
-        if value is None and key in ("title", "category_id", "sale_price", "condition_pct",
+        if value is None and key in ("title", "category_id", "price", "condition_pct",
                                      "is_visible"):
             continue  # non-nullable columns
         setattr(book, key, value)

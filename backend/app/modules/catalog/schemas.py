@@ -70,7 +70,7 @@ class BookCard(BaseModel):
     slug: str
     title: str
     author: str | None
-    sale_price: int
+    price: int
     condition_pct: int
     cover_url: str | None
     available: int
@@ -97,7 +97,7 @@ class BookCreate(BaseModel):
     author_ids: list[int] = Field(default_factory=list, max_length=10)
     publisher: str | None = Field(default=None, max_length=255)
     published_year: int | None = Field(default=None, ge=1000, le=2100)
-    sale_price: Money
+    price: Money
     condition_pct: ConditionPct
     description: str | None = None
     quantity: int = Field(default=1, ge=0)
@@ -112,7 +112,7 @@ class BookUpdate(BaseModel):
     author_ids: list[int] | None = Field(default=None, max_length=10)  # None = unchanged
     publisher: str | None = Field(default=None, max_length=255)
     published_year: int | None = Field(default=None, ge=1000, le=2100)
-    sale_price: Money | None = None
+    price: Money | None = None
     condition_pct: ConditionPct | None = None
     description: str | None = None
     quantity: int | None = Field(default=None, ge=0)

@@ -5,6 +5,7 @@ from sqlalchemy import BigInteger, DateTime, Enum, ForeignKey, String, Text, fun
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base, TimestampMixin
+from app.modules.catalog.models import Book
 
 
 class OrderStatus(str, enum.Enum):
@@ -59,11 +60,15 @@ class OrderItem(Base):
         ForeignKey("orders.id", ondelete="CASCADE"), index=True, nullable=False
     )
     book_id: Mapped[int] = mapped_column(ForeignKey("books.id"), index=True, nullable=False)
-    title_snapshot: Mapped[str] = mapped_column(String(255), nullable=False)
-    unit_price: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price: Mapped[int] = mapped_column(BigInteger, nullable=False)  # unit price at checkout
     quantity: Mapped[int] = mapped_column(nullable=False)
 
     order: Mapped[Order] = relationship(back_populates="items")
+    book: Mapped["Book"] = relationship(lazy="joined", innerjoin=True)
+
+    @property
+    def title(self) -> str:
+        return self.book.title
 
 
 class OrderStatusHistory(Base):

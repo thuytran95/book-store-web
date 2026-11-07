@@ -569,8 +569,8 @@ export interface components {
             title: string;
             /** Author */
             author: string | null;
-            /** Sale Price */
-            sale_price: number;
+            /** Price */
+            price: number;
             /** Condition Pct */
             condition_pct: number;
             /** Cover Url */
@@ -611,8 +611,8 @@ export interface components {
             title: string;
             /** Author */
             author: string | null;
-            /** Sale Price */
-            sale_price: number;
+            /** Price */
+            price: number;
             /** Condition Pct */
             condition_pct: number;
             /** Cover Url */
@@ -633,8 +633,8 @@ export interface components {
             publisher?: string | null;
             /** Published Year */
             published_year?: number | null;
-            /** Sale Price */
-            sale_price: number;
+            /** Price */
+            price: number;
             /** Condition Pct */
             condition_pct: number;
             /** Description */
@@ -667,8 +667,8 @@ export interface components {
             title: string;
             /** Author */
             author: string | null;
-            /** Sale Price */
-            sale_price: number;
+            /** Price */
+            price: number;
             /** Condition Pct */
             condition_pct: number;
             /** Cover Url */
@@ -723,8 +723,8 @@ export interface components {
             publisher?: string | null;
             /** Published Year */
             published_year?: number | null;
-            /** Sale Price */
-            sale_price?: number | null;
+            /** Price */
+            price?: number | null;
             /** Condition Pct */
             condition_pct?: number | null;
             /** Description */
@@ -749,8 +749,8 @@ export interface components {
             title: string;
             /** Cover Url */
             cover_url: string | null;
-            /** Sale Price */
-            sale_price: number;
+            /** Price */
+            price: number;
             /** Is Visible */
             is_visible: boolean;
         };
@@ -893,10 +893,10 @@ export interface components {
         OrderItemRead: {
             /** Book Id */
             book_id: number;
-            /** Title Snapshot */
-            title_snapshot: string;
-            /** Unit Price */
-            unit_price: number;
+            /** Title */
+            title: string;
+            /** Price */
+            price: number;
             /** Quantity */
             quantity: number;
         };

@@ -90,21 +90,6 @@ export function InventoryToolbar({
             }))}
             icon="swap_vert"
           />
-          <div className="ml-auto flex items-center rounded-full bg-surface-container-low p-1 lg:ml-0">
-            <ViewToggle
-              active={viewMode === "table"}
-              onClick={() => onViewModeChange("table")}
-              icon="format_list_bulleted"
-              title="Xem dạng bảng"
-            />
-            <ViewToggle
-              active={viewMode === "grid"}
-              onClick={() => onViewModeChange("grid")}
-              icon="grid_view"
-              title="Xem dạng lưới (sắp có)"
-              disabled
-            />
-          </div>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-space-xs pt-1">

@@ -50,7 +50,7 @@ export function BookCard({ book, className }: { book: BookCardData; className?: 
         <h3 className="line-clamp-2 text-sm font-medium group-hover:underline">{book.title}</h3>
         {book.author && <p className="line-clamp-1 text-xs text-muted-foreground">{book.author}</p>}
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
-          <PriceTag amount={book.sale_price} size="sm" />
+          <PriceTag amount={book.price} size="sm" />
           <ConditionBadge pct={book.condition_pct} />
         </div>
       </div>

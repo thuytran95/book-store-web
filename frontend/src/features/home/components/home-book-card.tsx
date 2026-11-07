@@ -56,7 +56,7 @@ export function HomeBookCard({ book }: { book: BookCardData }) {
       </div>
       <div className="mt-2 border-t border-gray-100 pt-4">
         <div className="mb-2.5 flex items-baseline justify-center gap-2">
-          <PriceTag amount={book.sale_price} size="sm" className="text-base font-extrabold" />
+          <PriceTag amount={book.price} size="sm" className="text-base font-extrabold" />
         </div>
         <Button
           type="button"
@@ -74,7 +74,7 @@ export function HomeBookCard({ book }: { book: BookCardData }) {
           {soldOut ? "Hết hàng" : "Thêm vào giỏ"}
         </Button>
         {!soldOut && (
-          <p className="sr-only">Giá {formatVnd(book.sale_price)}</p>
+          <p className="sr-only">Giá {formatVnd(book.price)}</p>
         )}
       </div>
     </div>

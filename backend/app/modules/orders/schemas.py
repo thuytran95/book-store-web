@@ -10,8 +10,8 @@ class OrderItemRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     book_id: int
-    title_snapshot: str
-    unit_price: int
+    title: str
+    price: int
     quantity: int
 
 

@@ -127,7 +127,7 @@ export function BooksTable() {
                   {b.author && <p className="text-xs text-muted-foreground">{b.author}</p>}
                 </TableCell>
                 <TableCell>{b.category.name}</TableCell>
-                <TableCell className="tabular-nums">{formatVnd(b.sale_price)}</TableCell>
+                <TableCell className="tabular-nums">{formatVnd(b.price)}</TableCell>
                 <TableCell className="tabular-nums">{b.quantity}</TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">

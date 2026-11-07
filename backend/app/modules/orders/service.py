@@ -84,10 +84,9 @@ async def place_order(session: AsyncSession, user: User, data: PlaceOrderIn) -> 
     for book_id in sorted(wanted):
         book, qty = books[book_id], wanted[book_id]
         session.add(OrderItem(
-            order_id=order.id, book_id=book_id, title_snapshot=book.title,
-            unit_price=book.sale_price, quantity=qty,
+            order_id=order.id, book_id=book_id, price=book.price, quantity=qty,
         ))
-        subtotal += book.sale_price * qty
+        subtotal += book.price * qty
     order.subtotal = subtotal
     order.total = subtotal + order.shipping_fee
     session.add(OrderStatusHistory(

@@ -16,7 +16,7 @@ function withQty(cart: Cart, bookId: number, qty: number): Cart {
   const items = cart.items
     .map((i) =>
       i.book.id === bookId
-        ? { ...i, quantity: qty, line_total: i.book.sale_price * qty }
+        ? { ...i, quantity: qty, line_total: i.book.price * qty }
         : i,
     )
     .filter((i) => i.quantity > 0);

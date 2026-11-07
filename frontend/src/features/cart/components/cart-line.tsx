@@ -34,7 +34,7 @@ export function CartLine({ item, onQtyChange, onRemove, disabled }: Props) {
         <Link href={`/books/${book.slug}`} className="line-clamp-2 text-sm font-medium hover:underline">
           {book.title}
         </Link>
-        <PriceTag amount={book.sale_price} size="sm" />
+        <PriceTag amount={book.price} size="sm" />
 
         {(unavailable || exceeds) && (
           <p role="alert" className="flex items-center gap-1 text-xs text-destructive">

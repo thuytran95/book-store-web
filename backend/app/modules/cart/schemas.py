@@ -12,7 +12,7 @@ class CartBookSnapshot(BaseModel):
     slug: str
     title: str
     cover_url: str | None
-    sale_price: int
+    price: int
     is_visible: bool
 
 

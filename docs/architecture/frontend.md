@@ -2,7 +2,7 @@
 
 Next.js 15 (App Router, RSC) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base-nova`, on
 `@base-ui/react`) · TanStack Query v5 · react-hook-form + zod v4 · openapi-fetch + openapi-typescript ·
-recharts · sonner · npm. UI copy is Vietnamese (`lang="vi"`, font Noto Sans JP via `next/font`, exposed as `--font-sans`). Body text is 16px on every screen: `body`, `text-sm` and `text-body-md` are all 16px (set in `globals.css`); use `text-xs` / `text-body-sm` for small text.
+sonner · npm. UI copy is Vietnamese (`lang="vi"`, font Noto Sans JP via `next/font`, exposed as `--font-sans`). Body text is 16px on every screen: `body`, `text-sm` and `text-body-md` are all 16px (set in `globals.css`); use `text-xs` / `text-body-sm` for small text.
 
 ## Layout (`frontend/src/`)
 
@@ -10,7 +10,7 @@ recharts · sonner · npm. UI copy is Vietnamese (`lang="vi"`, font Noto Sans JP
 app/                      routes only; pages stay thin and render a feature component
 ├── layout.tsx            root: fonts, Material Symbols, <Providers>, <Toaster>
 ├── (shop)/               storefront + buyer pages (shop-layout)
-├── (auth)/               login, register, forgot-password, reset-password
+├── (auth)/               login, register
 └── admin/                admin pages (admin-layout)
 features/<domain>/
 ├── components/           domain UI
@@ -31,9 +31,9 @@ middleware.ts             route guard
 | Area                   | Routes                                                                                                                                                                                                                                                   | Feature folder                                               |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | Shop                   | `/`, `/books`, `/books/[slug]`                                                                                                                                                                                                                           | `home`, `catalog` (incl. `catalog/book-detail/`)             |
-| Auth                   | `/login`, `/register`, `/forgot-password`, `/reset-password`                                                                                                                                                                                             | `auth`                                                       |
-| Buyer (login required) | `/cart`, `/checkout`, `/orders`, `/orders/[id]`, `/reservations`, `/book-requests`, `/account/profile`, `/account/addresses`                                                                                                                             | `cart`, `orders`, `reservations`, `book-requests`, `account` |
-| Admin (admin role)     | `/admin` (inventory home), `/admin/books`, `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/orders`, `/admin/orders/[id]`, `/admin/reservations`, `/admin/book-requests`, `/admin/users`, `/admin/reports` | `admin` (components grouped by domain: `components/{inventory,book,category,order,reservation,book-request,user,report}/`) |
+| Auth                   | `/login`, `/register`                                                                                                                                                                                                                                    | `auth`                                                       |
+| Buyer (login required) | `/cart`, `/checkout` (shipping info typed in the form), `/orders`, `/orders/[id]`, `/account/profile`                                                                                                                                                 | `cart`, `orders`, `account`                                  |
+| Admin (admin role)     | `/admin` (inventory home), `/admin/books`, `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/authors` (search, create/edit dialog, delete with merge; book count links to `/admin?author_id=`), `/admin/orders`, `/admin/orders/[id]`, `/admin/users` | `admin` (components grouped by domain: `components/{inventory,book,category,author,order,user}/`) |
 
 ## Data access
 

@@ -2,7 +2,6 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
-    Computed,
     ForeignKey,
     Index,
     SmallInteger,
@@ -10,7 +9,6 @@ from sqlalchemy import (
     Text,
     text,
 )
-from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base, TimestampMixin
@@ -63,10 +61,9 @@ class BookAuthor(Base):
 class Book(Base, TimestampMixin):
     __tablename__ = "books"
     __table_args__ = (
-        CheckConstraint("sale_price >= 0", name="ck_books_sale_price"),
+        CheckConstraint("price >= 0", name="ck_books_price"),
         CheckConstraint("quantity >= 0", name="ck_books_quantity"),
         CheckConstraint("condition_pct BETWEEN 10 AND 100", name="ck_books_condition"),
-        Index("ix_books_search_vector", "search_vector", postgresql_using="gin"),
         Index(
             "ix_books_title_trgm",
             text("immutable_unaccent(title) gin_trgm_ops"),
@@ -89,21 +86,13 @@ class Book(Base, TimestampMixin):
     author: Mapped[str | None] = mapped_column(String(255))
     publisher: Mapped[str | None] = mapped_column(String(255))
     published_year: Mapped[int | None] = mapped_column(SmallInteger)
-    sale_price: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price: Mapped[int] = mapped_column(BigInteger, nullable=False)
     condition_pct: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     # Only the `inventory` module may change quantity after creation.
     quantity: Mapped[int] = mapped_column(default=1, nullable=False)
     is_visible: Mapped[bool] = mapped_column(
         Boolean, default=True, server_default=text("true"), nullable=False
-    )
-    search_vector: Mapped[str] = mapped_column(
-        TSVECTOR,
-        Computed(
-            "to_tsvector('simple', immutable_unaccent(title || ' ' || coalesce(author, '')))",
-            persisted=True,
-        ),
-        nullable=False,
     )
 
     category: Mapped[Category] = relationship(lazy="joined")

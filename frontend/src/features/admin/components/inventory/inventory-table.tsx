@@ -69,19 +69,8 @@ export function InventoryTable({
         <table className="w-full border-collapse text-left text-body-md">
           <thead>
             <tr className="bg-surface-container-low/70 text-label-sm uppercase tracking-wider text-on-surface-variant">
-              <th className="w-12 px-4 py-3.5 text-center">
-                <input
-                  type="checkbox"
-                  aria-label="Chọn tất cả"
-                  checked={allSelected}
-                  onChange={() => onToggleAll(pageIds)}
-                  className="size-4 cursor-pointer accent-primary"
-                />
-              </th>
-              <th className="px-4 py-3.5 font-semibold">Mã lưu kho</th>
-              <th className="min-w-[280px] px-4 py-3.5 font-semibold">
-                Sách & Tác giả
-              </th>
+              <th className="px-4 py-3.5 font-semibold">Mã sách</th>
+              <th className="min-w-[280px] px-4 py-3.5 font-semibold">Sách</th>
               <th className="px-4 py-3.5 font-semibold">Thể loại</th>
               <th className="min-w-[140px] px-4 py-3.5 text-right font-semibold">
                 Giá bán
@@ -100,33 +89,11 @@ export function InventoryTable({
                 key={row.id}
                 className="group transition-colors hover:bg-surface-container-low/40"
               >
-                <td className="px-4 py-3.5 text-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(row.id)}
-                    onChange={() => onToggleRow(row.id)}
-                    className="size-4 cursor-pointer accent-primary"
-                  />
-                </td>
                 <td className="whitespace-nowrap px-4 py-3.5">
                   <div className="flex items-center gap-1.5">
                     <span className="rounded-full bg-surface-container px-2 py-0.5 text-label-md font-semibold text-primary">
                       {row.stockCode}
                     </span>
-                    <button
-                      type="button"
-                      title="Sao chép mã"
-                      className="text-on-surface-variant opacity-0 transition-all hover:text-primary group-hover:opacity-100"
-                      onClick={() => {
-                        void navigator.clipboard.writeText(row.stockCode);
-                        toast.success("Đã sao chép mã lưu kho");
-                      }}
-                    >
-                      <MaterialIcon
-                        name="content_copy"
-                        className="text-[16px]"
-                      />
-                    </button>
                   </div>
                 </td>
                 <td className="px-4 py-3.5">
@@ -149,21 +116,6 @@ export function InventoryTable({
                       >
                         {row.title}
                       </Link>
-                      <p className="text-body-sm text-on-surface-variant">
-                        Tác giả:{" "}
-                        <span className="font-medium text-on-surface">
-                          {row.author ?? "—"}
-                        </span>
-                      </p>
-                      {(row.publishedYear || row.publisher) && (
-                        <p className="mt-0.5 text-label-sm text-on-surface-variant">
-                          {row.publishedYear
-                            ? `Bản in ${row.publishedYear}`
-                            : null}
-                          {row.publishedYear && row.publisher ? " • " : null}
-                          {row.publisher}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </td>

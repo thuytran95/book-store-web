@@ -14,7 +14,7 @@ export const bookSchema = z.object({
     emptyToUndef,
     z.coerce.number().int().min(1000).max(2100).optional(),
   ),
-  sale_price: z.coerce.number().int().min(0),
+  price: z.coerce.number().int().min(0),
   condition_pct: z.coerce.number().int().min(10).max(100),
   description: z.preprocess(emptyToUndef, z.string().optional()),
   quantity: z.coerce.number().int().min(0),

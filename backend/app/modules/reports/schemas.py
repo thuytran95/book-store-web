@@ -8,7 +8,7 @@ class InventoryOverview(BaseModel):
     total_titles: int
     category_count: int
     categorized_pct: float
-    estimated_stock_value: int  # sum(sale_price * quantity)
+    estimated_stock_value: int  # sum(price * quantity)
     good_condition_copies: int
     good_condition_pct: float
     intake_this_week: int

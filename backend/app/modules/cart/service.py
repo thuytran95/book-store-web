@@ -37,11 +37,11 @@ async def get_cart(session: AsyncSession, user: User) -> CartRead:
             book=CartBookSnapshot(
                 id=b.id, slug=b.slug, title=b.title,
                 cover_url=b.images[0].url if b.images else None,
-                sale_price=b.sale_price, is_visible=b.is_visible,
+                price=b.price, is_visible=b.is_visible,
             ),
             quantity=item.quantity,
             available=available.get(b.id, 0),
-            line_total=b.sale_price * item.quantity,
+            line_total=b.price * item.quantity,
         )
         for item, b in pairs
     ]

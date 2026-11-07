@@ -68,14 +68,14 @@ export default async function BookDetailPage({ params }: Props) {
             conditionPct={book.condition_pct}
             available={book.available}
           />
-          <BookDetailPricingPromo salePrice={book.sale_price} />
+          <BookDetailPricingPromo salePrice={book.price} />
           <BookDetailTrustGrid />
         </div>
 
         <div className="lg:col-span-3">
           <BookDetailBuyBox
             bookId={book.id}
-            salePrice={book.sale_price}
+            salePrice={book.price}
             available={book.available}
             visible={book.is_visible}
           />

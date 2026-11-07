@@ -64,11 +64,11 @@ export function OrderDetail() {
         <h2 className="font-semibold">Sản phẩm</h2>
         <ul className="divide-y rounded-xl border">
           {order.items.map((i) => (
-            <li key={`${i.book_id}-${i.title_snapshot}`} className="flex justify-between gap-3 p-3 text-sm">
+            <li key={`${i.book_id}-${i.title}`} className="flex justify-between gap-3 p-3 text-sm">
               <span>
-                {i.quantity} × {i.title_snapshot}
+                {i.quantity} × {i.title}
               </span>
-              <span className="tabular-nums">{formatVnd(i.unit_price * i.quantity)}</span>
+              <span className="tabular-nums">{formatVnd(i.price * i.quantity)}</span>
             </li>
           ))}
         </ul>

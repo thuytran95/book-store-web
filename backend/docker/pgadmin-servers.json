@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "bookstore (docker)",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "bookstore",
+      "Username": "bookstore",
+      "SSLMode": "prefer"
+    }
+  }
+}

@@ -33,7 +33,7 @@ const EMPTY: Values = {
   authors: [],
   publisher: "",
   published_year: undefined,
-  sale_price: 0,
+  price: 0,
   condition_pct: 80,
   description: "",
   quantity: 1,
@@ -63,7 +63,7 @@ export function BookForm({ bookId }: { bookId?: number }) {
       authors: book.authors.map((a) => ({ id: a.id, name: a.name })),
       publisher: book.publisher ?? "",
       published_year: book.published_year ?? undefined,
-      sale_price: book.sale_price,
+      price: book.price,
       condition_pct: book.condition_pct,
       description: book.description ?? "",
       quantity: book.quantity,
@@ -88,7 +88,7 @@ export function BookForm({ bookId }: { bookId?: number }) {
             author_ids: v.authors.map((a) => a.id),
             publisher: v.publisher || null,
             published_year: v.published_year ?? null,
-            sale_price: v.sale_price,
+            price: v.price,
             condition_pct: v.condition_pct,
             description: v.description || null,
             is_visible: v.is_visible,
@@ -187,13 +187,13 @@ export function BookForm({ bookId }: { bookId?: number }) {
           <FormField
             label="Giá bán (đ)"
             required
-            error={formState.errors.sale_price?.message}
+            error={formState.errors.price?.message}
           >
             <Input
               type="number"
               min={0}
               step={1000}
-              {...register("sale_price")}
+              {...register("price")}
             />
           </FormField>
           <FormField

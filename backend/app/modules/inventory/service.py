@@ -76,7 +76,7 @@ class Inventory:
             select(Book)
             .where(Book.id.in_(ordered))
             .order_by(Book.id)
-            .with_for_update()
+            .with_for_update(of=Book)
             .execution_options(populate_existing=True)
         )
         return {b.id: b for b in rows}

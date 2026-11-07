@@ -81,7 +81,7 @@ async def seed_demo() -> None:
                 title=title,
                 slug=slugify(title),
                 author=author,
-                sale_price=sale,
+                price=sale,
                 condition_pct=cond,
                 quantity=qty,
                 is_visible=True,

@@ -7,13 +7,12 @@ All endpoints are under `/api/v1`. Swagger: `/api/v1/docs`, OpenAPI: `/api/v1/op
 
 ```
 backend/
-├── alembic/versions/        hand-numbered migrations 0001 … 0008
+├── alembic/versions/        hand-numbered migrations 0001 … 0011
 ├── docker/init-db.sql       creates extensions unaccent, pg_trgm, citext
 └── app/
     ├── main.py              create_app(): error handlers, rate limit, request-id, CORS, routers, /media
     ├── cli.py               seed-admin, seed-demo
     ├── core/                shared infrastructure (see below)
-    ├── jobs/                APScheduler jobs (started in lifespan)
     └── modules/<name>/      one folder per business module
 ```
 
@@ -24,7 +23,7 @@ backend/
 | `config.py` | `Settings` / `get_settings()`; reads `.env` and `../.env` |
 | `db.py` | `engine`, `SessionLocal`, `Base`, `TimestampMixin` (created_at/updated_at), `get_session` (commit once per request) |
 | `deps.py` | `SessionDep`, `CurrentUser`, `AdminUser`, `require_admin`; reads the `access_token` cookie |
-| `security.py` | bcrypt hashing, JWT access/refresh tokens, password-reset tokens |
+| `security.py` | bcrypt hashing, JWT access/refresh tokens |
 | `errors.py` | `DomainError` hierarchy + handlers that return `{"error": {"code", "message", "details"}}` |
 | `pagination.py` | `PageDep` (page, size ≤ 100) and `Page[T]` (`items, total, page, size`) |
 | `types.py` | `Money` (int VND ≥ 0), `Phone` (VN), `Password`, `ConditionPct` (10–100) |
@@ -49,34 +48,34 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 
 | Module | Tables | Public / buyer endpoints | Admin endpoints |
 | --- | --- | --- | --- |
-| auth | `password_reset_tokens` | `POST /auth/register, /login, /logout, /refresh, /password/forgot, /password/reset` (rate limited) | — |
-| users | `users`, `addresses` | `GET/PATCH /me`, `GET/POST/PATCH/DELETE /me/addresses` | `GET /admin/users`, `POST /admin/users/{id}/lock, /unlock` |
-| catalog | `categories`, `books`, `book_images` | `GET /categories`, `GET /books` (search/filter, paginated), `GET /books/{slug}` | `GET/POST/PATCH/DELETE /admin/books`, `POST /admin/books/{id}/mark-sold`, `GET/POST/PATCH/DELETE /admin/categories` |
+| auth | — | `POST /auth/register, /login, /logout, /refresh` (rate limited) | — |
+| users | `users` | `GET/PATCH /me` | `GET /admin/users`, `POST /admin/users/{id}/lock, /unlock` |
+| catalog | `categories`, `authors`, `book_authors`, `books`, `book_images` | `GET /categories`, `GET /books` (search/filter, paginated), `GET /books/{slug}` | `GET/POST/PATCH/DELETE /admin/books` (`?author_id=` filter, body `author_ids`; PATCH `quantity` goes through `Inventory.set_quantity`), `GET/POST/PATCH/DELETE /admin/categories`, `GET/POST/PATCH/DELETE /admin/authors` (`?q=`, paginated; delete takes `?merge_into=`) |
 | media | (uses `book_images`) | — | `POST/PUT /admin/books/{id}/images`, `DELETE /admin/books/{id}/images/{image_id}` |
 | cart | `carts`, `cart_items` | `GET /cart`, `PUT/DELETE /cart/items/{book_id}`, `DELETE /cart` | — |
-| orders | `orders`, `order_items`, `order_status_history` | `POST/GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel` | `GET /admin/orders`, `GET /admin/orders/{id}`, `POST /admin/orders/{id}/transition` |
-| reservations | `reservations` | `POST/GET /reservations`, `POST /reservations/{id}/cancel` | `GET /admin/reservations`, `POST /admin/reservations/{id}/cancel` |
-| book_requests | `book_requests` | `POST/GET /book-requests` | `GET /admin/book-requests`, `POST /admin/book-requests/{id}/resolve` |
-| reports | — (read-only queries) | — | `GET /admin/reports/revenue, /summary, /best-sellers, /low-stock`, `GET /admin/inventory/overview` |
+| orders | `orders`, `order_items`, `order_status_history` | `POST/GET /orders` (body carries `ship_recipient`, `ship_phone`, `ship_address`), `GET /orders/{id}`, `POST /orders/{id}/cancel` | `GET /admin/orders`, `GET /admin/orders/{id}`, `POST /admin/orders/{id}/transition` |
+| reports | — (read-only queries) | — | `GET /admin/inventory/overview` |
 | inventory | — (service only) | — | — |
-| mail | — | `Mailer` port: `ConsoleMailer` (dev) / `SmtpMailer` (`MAIL_BACKEND`) | — |
 
 ## Domain rules
 
 - **Inventory** (`modules/inventory/service.py`): the only code that reads or changes `books.quantity`.
-  Available stock = `quantity` − items in pending orders − active, unexpired reservations.
+  Available stock = `quantity` − items in pending orders.
   `Inventory(session)` exposes `available`, `allocate` (row locks in id order, raises `OutOfStock`),
-  `commit`, `release`, `set_quantity`. An allocation is not a table: it comes from the order items and
-  reservations inserted in the same transaction.
+  `commit`, `release`, `set_quantity`. An allocation is not a table: it comes from the order items
+  inserted in the same transaction.
 - **Order status** (`orders/state_machine.py`): `pending → confirmed → shipping → completed`, and
   `cancelled` from any non-final state. Buyers can only cancel `pending`; admins can make any legal move.
   Use `may_transition` / `allowed_targets`. Every change is written to `order_status_history`.
+- **Order items** store `price` (unit price at checkout) and `quantity`; the title is read from `books`
+  through `OrderItem.book` (books with orders cannot be deleted).
 - **Payment**: `cod` or `bank_transfer` (bank details from `BANK_TRANSFER_INFO`). No online payment.
-- **Reservations**: statuses `active | converted | cancelled | expired`. Held for `RESERVATION_HOLD_DAYS`,
-  at most `MAX_ACTIVE_RESERVATIONS` per user. `jobs/expire_reservations.py` expires them every 10 minutes.
-- **Book requests**: `pending | available | rejected`, resolved by an admin.
-- **Search** (`catalog/search.py`): full-text search on `immutable_unaccent(title || author)` plus
-  `pg_trgm` similarity (threshold 0.3) for typos. Sorts: `newest`, `price_asc`, `price_desc`, `relevance`.
+- **Search** (`catalog/search.py`): every word must appear (accent-insensitive `LIKE`) in
+  `immutable_unaccent(title || author)`, or `pg_trgm` similarity (threshold 0.3) for typos. No tsvector column. Sorts: `newest`, `price_asc`, `price_desc`, `relevance`.
+- **Authors** (`catalog`): `authors` (name unique on `lower(immutable_unaccent(name))`, no slug) linked to
+  books many-to-many through `book_authors` (`position` = order). `books.author` is a display cache
+  ("A, B") rebuilt only by `catalog.service._refresh_author_text` on book save and author rename/merge;
+  search keeps using it. Deleting an author with books needs `merge_into` (`AUTHOR_IN_USE` otherwise).
 - **Money** is integer VND. **Condition** is `condition_pct` 10–100. Slugs come from `catalog.service.slugify`.
 
 ## Auth

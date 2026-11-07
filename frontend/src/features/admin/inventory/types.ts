@@ -41,7 +41,7 @@ export function toAdminInventoryRow(book: BookAdminRead): AdminInventoryRow {
     categoryName: book.category.name,
     conditionPct: book.condition_pct,
     conditionNote: book.description,
-    salePrice: book.sale_price,
+    salePrice: book.price,
     shelfStatus: shelfStatusForBook(book),
     slug: book.slug,
   };
