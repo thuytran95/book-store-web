@@ -1,16 +1,20 @@
 import re
 import unicodedata
 
-from sqlalchemy import exists, func, select, update
+from sqlalchemy import delete, exists, func, insert, literal, select, update
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased, selectinload
 
-from app.core.errors import Conflict, NotFound
+from app.core.errors import Conflict, DomainError, NotFound
 from app.core.pagination import Page, PageParams
 from app.modules.catalog import search
-from app.modules.catalog.models import Book, Category
+from app.modules.catalog.models import Author, Book, BookAuthor, Category
 from app.modules.catalog.schemas import (
+    AuthorCreate,
+    AuthorRead,
+    AuthorUpdate,
     BookAdminRead,
     BookCard,
     BookCreate,
@@ -24,7 +28,6 @@ from app.modules.catalog.schemas import (
 )
 from app.modules.inventory import Inventory
 from app.modules.orders.models import OrderItem
-from app.modules.reservations.models import Reservation
 
 
 def slugify(text: str) -> str:
@@ -71,6 +74,7 @@ def _detail_fields(book: Book, available: int) -> dict:
         "publisher": book.publisher,
         "published_year": book.published_year,
         "description": book.description,
+        "authors": book.authors,
         "images": book.images,
         "is_visible": book.is_visible,
         "created_at": book.created_at,
@@ -83,8 +87,7 @@ def to_detail(book: Book, available: int) -> BookDetail:
 
 def to_admin(book: Book, available: int) -> BookAdminRead:
     return BookAdminRead.model_validate(
-        {**_detail_fields(book, available), "cost_price": book.cost_price,
-         "quantity": book.quantity}
+        {**_detail_fields(book, available), "quantity": book.quantity}
     )
 
 
@@ -155,25 +158,32 @@ async def _require_category(session: AsyncSession, category_id: int) -> None:
 async def create_book(session: AsyncSession, data: BookCreate) -> BookAdminRead:
     await _require_category(session, data.category_id)
     slug = await _unique_slug(session, Book, slugify(data.title))
-    book = Book(**data.model_dump(), slug=slug)
+    book = Book(**data.model_dump(exclude={"author_ids"}), slug=slug)
     session.add(book)
     await session.flush()
+    await _set_book_authors(session, book.id, data.author_ids)
     return await admin_get_book(session, book.id)
 
 
 async def update_book(session: AsyncSession, book_id: int, data: BookUpdate) -> BookAdminRead:
     book = await _with_images(session, book_id)
     changes = data.model_dump(exclude_unset=True)
+    author_ids = changes.pop("author_ids", None)
+    quantity = changes.pop("quantity", None)
     if "category_id" in changes and changes["category_id"] is not None:
         await _require_category(session, changes["category_id"])
     for key, value in changes.items():
-        if value is None and key in ("title", "category_id", "sale_price", "cost_price",
-                                     "condition_pct", "is_visible"):
+        if value is None and key in ("title", "category_id", "sale_price", "condition_pct",
+                                     "is_visible"):
             continue  # non-nullable columns
         setattr(book, key, value)
     if changes.get("title"):
         book.slug = await _unique_slug(session, Book, slugify(book.title), exclude_id=book.id)
     await session.flush()
+    if quantity is not None:
+        await Inventory(session).set_quantity(book_id, quantity)
+    if author_ids is not None:
+        await _set_book_authors(session, book_id, author_ids)
     return await admin_get_book(session, book_id)
 
 
@@ -181,12 +191,7 @@ async def delete_book(session: AsyncSession, book_id: int) -> BookDeleteResult:
     book = await session.get(Book, book_id)
     if book is None:
         raise NotFound("Book not found")
-    has_history = await session.scalar(
-        select(
-            exists().where(OrderItem.book_id == book_id)
-            | exists().where(Reservation.book_id == book_id)
-        )
-    )
+    has_history = await session.scalar(select(exists().where(OrderItem.book_id == book_id)))
     if has_history:
         book.is_visible = False
         await session.flush()
@@ -196,9 +201,185 @@ async def delete_book(session: AsyncSession, book_id: int) -> BookDeleteResult:
     return BookDeleteResult(deleted=True, hidden=False)
 
 
-async def mark_sold(session: AsyncSession, book_id: int) -> BookAdminRead:
-    await Inventory(session).set_quantity(book_id, 0)
-    return await admin_get_book(session, book_id)
+# ---- admin: book <-> authors ----
+
+async def _refresh_author_text(session: AsyncSession, book_ids: list[int]) -> None:
+    """Rebuild the `books.author` display cache from `book_authors` (NULL when no author)."""
+    if not book_ids:
+        return
+    names = (
+        select(
+            func.left(
+                func.string_agg(
+                    Author.name, aggregate_order_by(literal(", "), BookAuthor.position)
+                ),
+                255,
+            )
+        )
+        .select_from(BookAuthor)
+        .join(Author, Author.id == BookAuthor.author_id)
+        .where(BookAuthor.book_id == Book.id)
+        .scalar_subquery()
+    )
+    await session.execute(
+        update(Book).where(Book.id.in_(book_ids)).values(author=names)
+        .execution_options(synchronize_session=False)
+    )
+
+
+async def _set_book_authors(session: AsyncSession, book_id: int, author_ids: list[int]) -> None:
+    ids = list(dict.fromkeys(author_ids))  # drop duplicates, keep order
+    if ids:
+        found = set(await session.scalars(select(Author.id).where(Author.id.in_(ids))))
+        missing = [i for i in ids if i not in found]
+        if missing:
+            raise DomainError(
+                "Unknown author ids", code="AUTHOR_NOT_FOUND", details={"ids": missing}
+            )
+    await session.execute(delete(BookAuthor).where(BookAuthor.book_id == book_id))
+    if ids:
+        await session.execute(
+            insert(BookAuthor),
+            [{"book_id": book_id, "author_id": a, "position": i} for i, a in enumerate(ids)],
+        )
+    await _refresh_author_text(session, [book_id])
+
+
+# ---- admin: authors ----
+
+def _author_read(author: Author, book_count: int | None) -> AuthorRead:
+    return AuthorRead(
+        id=author.id, name=author.name, bio=author.bio, book_count=book_count or 0,
+        created_at=author.created_at,
+    )
+
+
+def _book_count_expr():
+    return (
+        select(func.count()).select_from(BookAuthor)
+        .where(BookAuthor.author_id == Author.id)
+        .scalar_subquery()
+    )
+
+
+def _norm(expr):
+    return func.lower(func.immutable_unaccent(expr))
+
+
+async def list_authors(
+    session: AsyncSession, q: str | None, params: PageParams
+) -> Page[AuthorRead]:
+    stmt = select(Author, _book_count_expr())
+    if q and q.strip():
+        term = q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        stmt = stmt.where(_norm(Author.name).like(func.concat("%", _norm(literal(term)), "%")))
+    total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
+    rows = await session.execute(
+        stmt.order_by(_norm(Author.name), Author.id).offset(params.offset).limit(params.size)
+    )
+    return Page.of([_author_read(a, n) for a, n in rows], total or 0, params)
+
+
+async def get_author(session: AsyncSession, author_id: int) -> AuthorRead:
+    row = (
+        await session.execute(
+            select(Author, _book_count_expr()).where(Author.id == author_id)
+            .execution_options(populate_existing=True)
+        )
+    ).first()
+    if row is None:
+        raise NotFound("Author not found")
+    return _author_read(*row)
+
+
+async def _ensure_author_name_free(
+    session: AsyncSession, name: str, exclude_id: int | None = None
+) -> None:
+    stmt = select(Author.id).where(_norm(Author.name) == _norm(literal(name)))
+    if exclude_id is not None:
+        stmt = stmt.where(Author.id != exclude_id)
+    existing = await session.scalar(stmt)
+    if existing is not None:
+        raise Conflict("Author already exists", code="AUTHOR_EXISTS", details={"id": existing})
+
+
+async def _flush_author(session: AsyncSession) -> None:
+    try:
+        await session.flush()
+    except IntegrityError:  # concurrent insert of the same name
+        raise Conflict("Author already exists", code="AUTHOR_EXISTS") from None
+
+
+def _clean_bio(bio: str | None) -> str | None:
+    return (bio or "").strip() or None
+
+
+async def create_author(session: AsyncSession, data: AuthorCreate) -> AuthorRead:
+    await _ensure_author_name_free(session, data.name)
+    author = Author(name=data.name, bio=_clean_bio(data.bio))
+    session.add(author)
+    await _flush_author(session)
+    return await get_author(session, author.id)
+
+
+async def update_author(session: AsyncSession, author_id: int, data: AuthorUpdate) -> AuthorRead:
+    author = await session.get(Author, author_id)
+    if author is None:
+        raise NotFound("Author not found")
+    changes = data.model_dump(exclude_unset=True)
+    new_name = changes.get("name")
+    renamed = bool(new_name) and new_name != author.name
+    if renamed:
+        await _ensure_author_name_free(session, new_name, exclude_id=author_id)
+        author.name = new_name
+    if "bio" in changes:
+        author.bio = _clean_bio(changes["bio"])
+    await _flush_author(session)
+    if renamed:
+        book_ids = list(await session.scalars(
+            select(BookAuthor.book_id).where(BookAuthor.author_id == author_id)
+        ))
+        await _refresh_author_text(session, book_ids)
+    return await get_author(session, author_id)
+
+
+async def delete_author(
+    session: AsyncSession, author_id: int, merge_into: int | None
+) -> None:
+    author = await session.get(Author, author_id)
+    if author is None:
+        raise NotFound("Author not found")
+    book_ids = list(await session.scalars(
+        select(BookAuthor.book_id).where(BookAuthor.author_id == author_id)
+    ))
+    if book_ids:
+        if merge_into is None:
+            raise Conflict(
+                "Author still has books", code="AUTHOR_IN_USE",
+                details={"book_count": len(book_ids)},
+            )
+        if merge_into == author_id:
+            raise Conflict("Cannot merge into the same author", code="INVALID_MERGE_TARGET")
+        if await session.get(Author, merge_into) is None:
+            raise NotFound("Merge target not found")
+        # Books that already list the target just lose the old link.
+        target = aliased(BookAuthor)
+        await session.execute(
+            delete(BookAuthor).where(
+                BookAuthor.author_id == author_id,
+                BookAuthor.book_id.in_(
+                    select(target.book_id).where(target.author_id == merge_into)
+                ),
+            )
+        )
+        await session.execute(
+            update(BookAuthor).where(BookAuthor.author_id == author_id)
+            .values(author_id=merge_into)
+            .execution_options(synchronize_session=False)
+        )
+    await session.delete(author)
+    await session.flush()
+    await _refresh_author_text(session, book_ids)
 
 
 # ---- admin: categories ----

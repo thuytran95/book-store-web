@@ -9,7 +9,7 @@ from sqlalchemy import Select, and_, func, literal, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.modules.catalog.models import Book, Category
+from app.modules.catalog.models import Book, BookAuthor, Category
 from app.modules.catalog.schemas import BookQuery, BookSort
 
 TRIGRAM_THRESHOLD = 0.3
@@ -49,6 +49,10 @@ def build_filters(q: BookQuery, *, public: bool = True) -> list:
     if q.category_slug:
         filters.append(Book.category_id.in_(
             select(Category.id).where(Category.slug == q.category_slug)
+        ))
+    if q.author_id is not None:
+        filters.append(Book.id.in_(
+            select(BookAuthor.book_id).where(BookAuthor.author_id == q.author_id)
         ))
     if q.price_min is not None:
         filters.append(Book.sale_price >= q.price_min)

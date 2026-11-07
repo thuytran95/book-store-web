@@ -21,6 +21,7 @@ export function useAdminInventoryFilters() {
     return {
       text: params.get("q")?.trim() || undefined,
       category: params.get("cat") || undefined,
+      author_id: Number(params.get("author_id")) || undefined,
       condition_min: CONDITION_FILTER_MIN[condKey],
       sort: sort as AdminBookFilters["sort"],
       page: parsePage(params.get("page")),
@@ -43,7 +44,7 @@ export function useAdminInventoryFilters() {
   );
 
   const setFilter = useCallback(
-    (key: "q" | "cat" | "cond" | "sort" | "page", value: string) => {
+    (key: "q" | "cat" | "author_id" | "cond" | "sort" | "page", value: string) => {
       setParams({ [key]: value || null }, key !== "page");
     },
     [setParams],

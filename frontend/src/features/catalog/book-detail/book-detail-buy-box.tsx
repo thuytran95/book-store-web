@@ -1,29 +1,22 @@
 "use client";
 
-import { Clock, Minus, Plus, ShoppingCart } from "lucide-react";
+import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { MaterialIcon } from "@/features/home/components/material-icon";
 import { useAddToCart } from "@/features/cart/hooks";
-import { useReserve } from "@/features/reservations/hooks";
 import { formatVnd } from "@/lib/format";
-import { errorMessage } from "@/lib/error-messages";
 import { useSession } from "@/lib/session";
-import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { pdpPillButtonPrimary, pdpPillButtonSecondary, pdpSurface } from "./pdp-styles";
-import { LinkButton } from "@/components/shared/link-button";
 
 export function BookDetailBuyBox({
   bookId,
-  title,
   salePrice,
   available,
   visible,
 }: {
   bookId: number;
-  title: string;
   salePrice: number;
   available: number;
   visible: boolean;
@@ -31,7 +24,6 @@ export function BookDetailBuyBox({
   const router = useRouter();
   const { session } = useSession();
   const add = useAddToCart();
-  const reserve = useReserve();
   const soldOut = available <= 0 || !visible;
   const maxQty = Math.max(available, 1);
   const [qty, setQty] = useState(1);
@@ -47,9 +39,6 @@ export function BookDetailBuyBox({
     return (
       <aside className={cn(pdpSurface(), "space-y-3 p-5 lg:sticky lg:top-44")}>
         <p className="text-sm font-medium text-destructive">Sách này đã hết hàng.</p>
-        <LinkButton href={`/book-requests?title=${encodeURIComponent(title)}`} className="w-full">
-          Yêu cầu tìm cuốn này
-        </LinkButton>
       </aside>
     );
   }
@@ -121,27 +110,6 @@ export function BookDetailBuyBox({
           <ShoppingCart className="size-4" />
           THÊM VÀO GIỎ HÀNG
         </button>
-        <Button
-          variant="outline"
-          className="w-full rounded-full"
-          disabled={reserve.isPending}
-          onClick={() => {
-            if (!session) return requireLogin();
-            reserve.mutate(
-              { bookId },
-              {
-                onSuccess: () => {
-                  toast.success("Đã giữ sách cho bạn");
-                  router.push("/reservations");
-                },
-                onError: (e) => toast.error(errorMessage(e)),
-              },
-            );
-          }}
-        >
-          <Clock className="size-4" />
-          Giữ sách
-        </Button>
       </div>
       <div className="flex flex-wrap justify-center gap-4 border-t pt-3 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1">

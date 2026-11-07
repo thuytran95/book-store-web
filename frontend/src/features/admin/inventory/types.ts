@@ -21,20 +21,15 @@ export type AdminInventoryRow = {
   slug: string;
 };
 
-export function shelfStatusForBook(
-  book: BookAdminRead,
-  heldBookIds: ReadonlySet<number>,
-): ShelfStatus {
+/** `held`: every copy is tied up in pending orders (in stock, but not available). */
+export function shelfStatusForBook(book: BookAdminRead): ShelfStatus {
   if (!book.is_visible) return "hidden";
-  if (heldBookIds.has(book.id)) return "held";
   if (book.quantity === 0) return "sold";
+  if (book.available === 0) return "held";
   return "on_shelf";
 }
 
-export function toAdminInventoryRow(
-  book: BookAdminRead,
-  heldBookIds: ReadonlySet<number>,
-): AdminInventoryRow {
+export function toAdminInventoryRow(book: BookAdminRead): AdminInventoryRow {
   return {
     id: book.id,
     stockCode: formatStockCode(book.id),
@@ -47,7 +42,7 @@ export function toAdminInventoryRow(
     conditionPct: book.condition_pct,
     conditionNote: book.description,
     salePrice: book.sale_price,
-    shelfStatus: shelfStatusForBook(book, heldBookIds),
+    shelfStatus: shelfStatusForBook(book),
     slug: book.slug,
   };
 }

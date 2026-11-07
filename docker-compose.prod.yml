@@ -1,7 +1,7 @@
 # Production: nginx terminates TLS and serves /media from disk.
 # Place certs in deploy/certs/fullchain.pem and privkey.pem.
 # Checklist: strong JWT_SECRET, CORS_ORIGINS = public origin, COOKIE_SECURE=true,
-# MAIL_BACKEND=smtp with SMTP_* filled, NEXT_PUBLIC_API_URL = public origin (no /api/v1).
+# NEXT_PUBLIC_API_URL = public origin (no /api/v1).
 
 services:
   db:

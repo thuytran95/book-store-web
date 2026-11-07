@@ -1,4 +1,3 @@
-import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -46,12 +45,3 @@ def decode_token(token: str, expected_type: str) -> dict[str, Any] | None:
         return None
     return payload if payload.get("type") == expected_type else None
 
-
-def new_reset_token() -> tuple[str, str]:
-    """(raw token for the email, sha256 hash for the DB)."""
-    raw = secrets.token_urlsafe(32)
-    return raw, hash_token(raw)
-
-
-def hash_token(raw: str) -> str:
-    return hashlib.sha256(raw.encode()).hexdigest()

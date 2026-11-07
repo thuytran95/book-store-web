@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import SessionLocal
 from app.core.security import hash_password
-from app.modules.catalog.models import Book, Category
+from app.modules.catalog.models import Author, Book, BookAuthor, Category
 from app.modules.catalog.service import slugify
 from app.modules.users.models import User, UserRole
 
@@ -67,27 +67,32 @@ async def seed_demo() -> None:
         session.add_all(cats)
         await session.flush()
         books = [
-            ("Dế Mèn phiêu lưu ký", "Tô Hoài", cats[0], 35000, 55000, 80, 1),
-            ("Nhà giả kim", "Paulo Coelho", cats[0], 40000, 65000, 85, 1),
-            ("Đắc nhân tâm", "Dale Carnegie", cats[1], 45000, 70000, 75, 2),
-            ("Hoàng tử bé", "Antoine de Saint-Exupéry", cats[2], 30000, 50000, 90, 1),
+            ("Dế Mèn phiêu lưu ký", "Tô Hoài", cats[0], 55000, 80, 1),
+            ("Nhà giả kim", "Paulo Coelho", cats[0], 65000, 85, 1),
+            ("Đắc nhân tâm", "Dale Carnegie", cats[1], 70000, 75, 2),
+            ("Hoàng tử bé", "Antoine de Saint-Exupéry", cats[2], 50000, 90, 1),
         ]
-        for title, author, cat, cost, sale, cond, qty in books:
-            session.add(
-                Book(
-                    category_id=cat.id,
-                    title=title,
-                    slug=slugify(title),
-                    author=author,
-                    cost_price=cost,
-                    sale_price=sale,
-                    condition_pct=cond,
-                    quantity=qty,
-                    is_visible=True,
-                    description=f"Sách cũ: {title}.",
-                )
+        authors = {name: Author(name=name) for name in {b[1] for b in books}}
+        session.add_all(authors.values())
+        await session.flush()
+        for title, author, cat, sale, cond, qty in books:
+            book = Book(
+                category_id=cat.id,
+                title=title,
+                slug=slugify(title),
+                author=author,
+                sale_price=sale,
+                condition_pct=cond,
+                quantity=qty,
+                is_visible=True,
+                description=f"Sách cũ: {title}.",
             )
-        print(f"Seeded {len(cats)} categories and {len(books)} books")
+            session.add(book)
+            await session.flush()
+            session.add(BookAuthor(book_id=book.id, author_id=authors[author].id, position=0))
+        print(
+            f"Seeded {len(cats)} categories, {len(authors)} authors and {len(books)} books"
+        )
 
     await _run(inner)
 

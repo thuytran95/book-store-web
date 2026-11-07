@@ -15,7 +15,6 @@ dependencies = [
     "pillow>=10.4",
     "python-multipart>=0.0.9",
     "slowapi>=0.1.9",
-    "apscheduler>=3.10",
     "ruff>=0.6",
 ]
 

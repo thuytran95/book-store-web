@@ -19,6 +19,7 @@ router = APIRouter(tags=["catalog"])
 def book_query(
     text: str | None = None,
     category: str | None = None,
+    author_id: int | None = None,
     price_min: Annotated[int | None, Query(ge=0)] = None,
     price_max: Annotated[int | None, Query(ge=0)] = None,
     condition_min: Annotated[int | None, Query(ge=10, le=100)] = None,
@@ -29,7 +30,8 @@ def book_query(
     size: Annotated[int, Query(ge=1, le=100)] = 20,
 ) -> BookQuery:
     return BookQuery(
-        text=text, category_slug=category, price_min=price_min, price_max=price_max,
+        text=text, category_slug=category, author_id=author_id,
+        price_min=price_min, price_max=price_max,
         condition_min=condition_min, in_stock_only=in_stock, visible=visible,
         sort=sort, page=page, size=size,
     )

@@ -15,14 +15,12 @@ import { cn } from "@/lib/utils";
 const PRIMARY_LINKS = [
   { href: "/admin", label: "Quản lý sách", icon: "inventory_2", exact: true },
   { href: "/admin/categories", label: "Thể loại sách", icon: "account_tree" },
+  { href: "/admin/authors", label: "Tác giả", icon: "history_edu" },
   { href: "/admin/books/new", label: "Thêm sách", icon: "post_add" },
-  { href: "/admin/reports", label: "Báo cáo & thống kê", icon: "monitoring" },
 ] as const;
 
 const EXTRA_LINKS = [
   { href: "/admin/orders", label: "Đơn hàng", icon: "package_2" },
-  { href: "/admin/reservations", label: "Giữ sách", icon: "timer" },
-  { href: "/admin/book-requests", label: "Yêu cầu tìm sách", icon: "list_alt" },
   { href: "/admin/users", label: "Người dùng", icon: "group" },
 ] as const;
 
@@ -200,7 +198,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </Button>
             <Link
               href="/"
-              className="hidden text-body-sm text-on-surface-variant hover:text-primary sm:inline"
+              className="hidden text-on-surface-variant hover:text-primary sm:inline"
             >
               ← Về cửa hàng
             </Link>

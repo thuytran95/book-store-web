@@ -2,6 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.core.types import Phone
 from app.modules.orders.models import OrderStatus, PaymentMethod
 
 
@@ -49,10 +50,11 @@ class OrderDetail(OrderSummary):
 
 
 class PlaceOrderIn(BaseModel):
-    address_id: int
+    ship_recipient: str = Field(min_length=1, max_length=120)
+    ship_phone: Phone
+    ship_address: str = Field(min_length=1, max_length=500)
     payment_method: PaymentMethod
     note: str | None = Field(default=None, max_length=1000)
-    reservation_ids: list[int] = []
 
 
 class TransitionIn(BaseModel):

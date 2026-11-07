@@ -24,10 +24,45 @@ class Category(Base, TimestampMixin):
     slug: Mapped[str] = mapped_column(String(140), unique=True, nullable=False)
 
 
+class Author(Base, TimestampMixin):
+    __tablename__ = "authors"
+    __table_args__ = (
+        Index(
+            "uq_authors_name_norm",
+            text("lower(immutable_unaccent(name))"),
+            unique=True,
+        ),
+        Index(
+            "ix_authors_name_trgm",
+            text("immutable_unaccent(name) gin_trgm_ops"),
+            postgresql_using="gin",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    bio: Mapped[str | None] = mapped_column(Text)
+
+
+class BookAuthor(Base):
+    """Ordered book <-> author link. Written only by `catalog.service`."""
+
+    __tablename__ = "book_authors"
+
+    book_id: Mapped[int] = mapped_column(
+        ForeignKey("books.id", ondelete="CASCADE"), primary_key=True
+    )
+    author_id: Mapped[int] = mapped_column(
+        ForeignKey("authors.id", ondelete="RESTRICT"), primary_key=True, index=True
+    )
+    position: Mapped[int] = mapped_column(
+        SmallInteger, default=0, server_default=text("0"), nullable=False
+    )
+
+
 class Book(Base, TimestampMixin):
     __tablename__ = "books"
     __table_args__ = (
-        CheckConstraint("cost_price >= 0", name="ck_books_cost_price"),
         CheckConstraint("sale_price >= 0", name="ck_books_sale_price"),
         CheckConstraint("quantity >= 0", name="ck_books_quantity"),
         CheckConstraint("condition_pct BETWEEN 10 AND 100", name="ck_books_condition"),
@@ -50,10 +85,10 @@ class Book(Base, TimestampMixin):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     slug: Mapped[str] = mapped_column(String(280), unique=True, nullable=False)
+    # Display cache: author names joined by ", " (see `catalog.service._refresh_author_text`).
     author: Mapped[str | None] = mapped_column(String(255))
     publisher: Mapped[str | None] = mapped_column(String(255))
     published_year: Mapped[int | None] = mapped_column(SmallInteger)
-    cost_price: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
     sale_price: Mapped[int] = mapped_column(BigInteger, nullable=False)
     condition_pct: Mapped[int] = mapped_column(SmallInteger, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -74,6 +109,9 @@ class Book(Base, TimestampMixin):
     category: Mapped[Category] = relationship(lazy="joined")
     images: Mapped[list["BookImage"]] = relationship(
         back_populates="book", order_by="BookImage.position", cascade="all, delete-orphan"
+    )
+    authors: Mapped[list[Author]] = relationship(
+        secondary="book_authors", order_by="BookAuthor.position", lazy="selectin", viewonly=True
     )
 
 

@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/account/profile", label: "Hồ sơ" },
-  { href: "/account/addresses", label: "Địa chỉ" },
 ];
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {

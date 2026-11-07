@@ -1,9 +1,12 @@
 from datetime import datetime
 from enum import Enum
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.core.types import ConditionPct, Money
+
+AuthorName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=160)]
 
 
 class CategoryCreate(BaseModel):
@@ -21,6 +24,29 @@ class CategoryRead(BaseModel):
     name: str
     slug: str
     book_count: int = 0
+
+
+class AuthorCreate(BaseModel):
+    name: AuthorName
+    bio: str | None = None
+
+
+class AuthorUpdate(BaseModel):
+    name: AuthorName | None = None
+    bio: str | None = None
+
+
+class AuthorRef(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+
+
+class AuthorRead(AuthorRef):
+    bio: str | None
+    book_count: int = 0
+    created_at: datetime
 
 
 class BookImageRead(BaseModel):
@@ -55,23 +81,22 @@ class BookDetail(BookCard):
     publisher: str | None
     published_year: int | None
     description: str | None
+    authors: list[AuthorRef]
     images: list[BookImageRead]
     is_visible: bool
     created_at: datetime
 
 
 class BookAdminRead(BookDetail):
-    cost_price: int
     quantity: int
 
 
 class BookCreate(BaseModel):
     category_id: int
     title: str = Field(min_length=1, max_length=255)
-    author: str | None = Field(default=None, max_length=255)
+    author_ids: list[int] = Field(default_factory=list, max_length=10)
     publisher: str | None = Field(default=None, max_length=255)
     published_year: int | None = Field(default=None, ge=1000, le=2100)
-    cost_price: Money = 0
     sale_price: Money
     condition_pct: ConditionPct
     description: str | None = None
@@ -80,17 +105,17 @@ class BookCreate(BaseModel):
 
 
 class BookUpdate(BaseModel):
-    """Quantity is intentionally absent: stock changes go through `inventory`."""
+    """`quantity` is applied through `inventory`, never set on the model directly."""
 
     category_id: int | None = None
     title: str | None = Field(default=None, min_length=1, max_length=255)
-    author: str | None = Field(default=None, max_length=255)
+    author_ids: list[int] | None = Field(default=None, max_length=10)  # None = unchanged
     publisher: str | None = Field(default=None, max_length=255)
     published_year: int | None = Field(default=None, ge=1000, le=2100)
-    cost_price: Money | None = None
     sale_price: Money | None = None
     condition_pct: ConditionPct | None = None
     description: str | None = None
+    quantity: int | None = Field(default=None, ge=0)
     is_visible: bool | None = None
 
 
@@ -111,6 +136,7 @@ class BookSort(str, Enum):
 class BookQuery(BaseModel):
     text: str | None = None
     category_slug: str | None = None
+    author_id: int | None = None
     price_min: int | None = Field(default=None, ge=0)
     price_max: int | None = Field(default=None, ge=0)
     condition_min: int | None = Field(default=None, ge=10, le=100)

@@ -35,10 +35,7 @@ export function UserMenu() {
 
   const items: [string, string][] = [
     ["Hồ sơ", "/account/profile"],
-    ["Địa chỉ", "/account/addresses"],
     ["Đơn hàng", "/orders"],
-    ["Sách đang giữ", "/reservations"],
-    ["Yêu cầu tìm sách", "/book-requests"],
   ];
 
   return (

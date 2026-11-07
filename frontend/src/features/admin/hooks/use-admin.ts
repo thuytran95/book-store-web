@@ -1,6 +1,7 @@
 "use client";
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 
@@ -8,10 +9,9 @@ type S = components["schemas"];
 export type BookCreate = S["BookCreate"];
 export type BookUpdate = S["BookUpdate"];
 export type CategoryRead = S["CategoryRead"];
+export type AuthorRead = S["AuthorRead"];
+export type AuthorRef = S["AuthorRef"];
 export type OrderStatus = S["OrderStatus"];
-export type ReservationStatus = S["ReservationStatus"];
-export type BookRequestStatus = S["BookRequestStatus"];
-export type Granularity = S["Granularity"];
 
 const invalidate = (qc: ReturnType<typeof useQueryClient>, ...keys: string[]) =>
   Promise.all(keys.map((k) => qc.invalidateQueries({ queryKey: [k] })));
@@ -21,6 +21,7 @@ const invalidate = (qc: ReturnType<typeof useQueryClient>, ...keys: string[]) =>
 export type AdminBookFilters = {
   text?: string;
   category?: string;
+  author_id?: number;
   condition_min?: number;
   in_stock?: boolean;
   visible?: boolean;
@@ -122,23 +123,6 @@ export function useToggleVisible() {
   });
 }
 
-export function useMarkSold() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: number) => {
-      const { data } = await api.POST("/api/v1/admin/books/{book_id}/mark-sold", {
-        params: { path: { book_id: id } },
-      });
-      return data!;
-    },
-    onSuccess: () =>
-      Promise.all([
-        invalidate(qc, "admin", "books", "book"),
-        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
-      ]),
-  });
-}
-
 export function useUploadBookImage() {
   const qc = useQueryClient();
   return useMutation({
@@ -227,6 +211,95 @@ export function useDeleteCategory() {
   });
 }
 
+// ---------------------------------------------------------------- Authors
+
+export function useDebouncedValue<T>(value: T, ms = 300): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), ms);
+    return () => clearTimeout(t);
+  }, [value, ms]);
+  return debounced;
+}
+
+export type AdminAuthorFilters = { q?: string; page?: number; size?: number };
+
+export function useAdminAuthors(filters: AdminAuthorFilters = {}) {
+  return useQuery({
+    queryKey: ["admin", "authors", filters],
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/authors", {
+        params: { query: { q: filters.q || null, page: filters.page, size: filters.size } },
+      });
+      return data!;
+    },
+  });
+}
+
+export function useAdminAuthor(id: number | undefined) {
+  return useQuery({
+    queryKey: ["admin", "authors", "one", id],
+    enabled: id !== undefined && Number.isFinite(id),
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/authors/{author_id}", {
+        params: { path: { author_id: id! } },
+      });
+      return data!;
+    },
+  });
+}
+
+/** Picker search: first 20 matches for a (debounced) query. */
+export function useAuthorOptions(q: string, enabled = true) {
+  const term = useDebouncedValue(q.trim(), 300);
+  return useQuery({
+    queryKey: ["admin", "authors", "options", term],
+    enabled,
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/authors", {
+        params: { query: { q: term || null, size: 20 } },
+      });
+      return data?.items ?? [];
+    },
+  });
+}
+
+/** Create (no `id`) or update. Errors: AUTHOR_EXISTS. */
+export function useSaveAuthor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { id?: number; name: string; bio?: string | null }) => {
+      const body = { name: v.name, bio: v.bio || null };
+      if (v.id === undefined) {
+        const { data } = await api.POST("/api/v1/admin/authors", { body });
+        return data!;
+      }
+      const { data } = await api.PATCH("/api/v1/admin/authors/{author_id}", {
+        params: { path: { author_id: v.id } },
+        body,
+      });
+      return data!;
+    },
+    // A rename changes the books' author text too.
+    onSuccess: () => invalidate(qc, "admin", "book"),
+  });
+}
+
+/** Errors: AUTHOR_IN_USE (retry with `mergeInto`), INVALID_MERGE_TARGET. */
+export function useDeleteAuthor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, mergeInto }: { id: number; mergeInto?: number }) => {
+      await api.DELETE("/api/v1/admin/authors/{author_id}", {
+        params: { path: { author_id: id }, query: { merge_into: mergeInto ?? null } },
+      });
+    },
+    onSuccess: () => invalidate(qc, "admin", "book"),
+  });
+}
+
 // ---------------------------------------------------------------- Orders
 
 export function useAdminOrders(status: OrderStatus | undefined, page = 1, code?: string) {
@@ -270,61 +343,6 @@ export function useTransitionOrder() {
   });
 }
 
-// ---------------------------------------------------------------- Reservations and requests
-
-export function useAdminReservations(status?: ReservationStatus, page = 1) {
-  return useQuery({
-    queryKey: ["admin", "reservations", status ?? "all", page],
-    placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/reservations", {
-        params: { query: { status: status ?? null, page } },
-      });
-      return data!;
-    },
-  });
-}
-
-export function useCancelAdminReservation() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: number) => {
-      await api.POST("/api/v1/admin/reservations/{reservation_id}/cancel", {
-        params: { path: { reservation_id: id } },
-      });
-    },
-    onSettled: () => invalidate(qc, "admin", "book", "books"),
-  });
-}
-
-export function useAdminBookRequests(status?: BookRequestStatus, page = 1) {
-  return useQuery({
-    queryKey: ["admin", "book-requests", status ?? "all", page],
-    placeholderData: keepPreviousData,
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/book-requests", {
-        params: { query: { status: status ?? null, page } },
-      });
-      return data!;
-    },
-  });
-}
-
-/** Errors: INVALID_STATUS, ALREADY_RESOLVED. */
-export function useResolveBookRequest() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (v: { id: number; status: "available" | "rejected"; adminNote?: string }) => {
-      const { data } = await api.POST("/api/v1/admin/book-requests/{request_id}/resolve", {
-        params: { path: { request_id: v.id } },
-        body: { status: v.status, admin_note: v.adminNote || null },
-      });
-      return data!;
-    },
-    onSuccess: () => invalidate(qc, "admin"),
-  });
-}
-
 // ---------------------------------------------------------------- Users
 
 export function useAdminUsers(search: string, page = 1) {
@@ -352,53 +370,5 @@ export function useSetUserLocked() {
       return data!;
     },
     onSuccess: () => invalidate(qc, "admin"),
-  });
-}
-
-// ---------------------------------------------------------------- Reports
-
-export function useRevenue(granularity: Granularity, range: { from?: string; to?: string } = {}) {
-  return useQuery({
-    queryKey: ["admin", "reports", "revenue", granularity, range],
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/reports/revenue", {
-        params: { query: { granularity, from: range.from ?? null, to: range.to ?? null } },
-      });
-      return data ?? [];
-    },
-  });
-}
-
-export function useSummary() {
-  return useQuery({
-    queryKey: ["admin", "reports", "summary"],
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/reports/summary");
-      return data!;
-    },
-  });
-}
-
-export function useBestSellers(limit = 10) {
-  return useQuery({
-    queryKey: ["admin", "reports", "best-sellers", limit],
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/reports/best-sellers", {
-        params: { query: { limit } },
-      });
-      return data ?? [];
-    },
-  });
-}
-
-export function useLowStock(threshold = 2) {
-  return useQuery({
-    queryKey: ["admin", "reports", "low-stock", threshold],
-    queryFn: async () => {
-      const { data } = await api.GET("/api/v1/admin/reports/low-stock", {
-        params: { query: { threshold } },
-      });
-      return data ?? [];
-    },
   });
 }

@@ -44,29 +44,10 @@ export const orderStatusLabel = (s: OrderStatus): string => STATUS_LABEL[s];
 export const orderStatusColor = (s: OrderStatus): string => STATUS_COLOR[s];
 
 type PaymentMethod = components["schemas"]["PaymentMethod"];
-type ReservationStatus = components["schemas"]["ReservationStatus"];
-type BookRequestStatus = components["schemas"]["BookRequestStatus"];
 
 export function paymentLabel(method: PaymentMethod): string {
   return method === "cod" ? "COD (khi nhận hàng)" : "Chuyển khoản";
 }
-
-const RESERVATION_LABEL: Record<ReservationStatus, string> = {
-  active: "Đang giữ",
-  converted: "Đã mua",
-  cancelled: "Đã huỷ",
-  expired: "Hết hạn",
-};
-
-export const reservationStatusLabel = (s: ReservationStatus): string => RESERVATION_LABEL[s];
-
-const REQUEST_LABEL: Record<BookRequestStatus, string> = {
-  pending: "Chờ xử lý",
-  available: "Đã có sách",
-  rejected: "Từ chối",
-};
-
-export const requestStatusLabel = (s: BookRequestStatus): string => REQUEST_LABEL[s];
 
 /** Admin stock code shown in inventory UI (until a dedicated column exists). */
 export function formatStockCode(bookId: number): string {

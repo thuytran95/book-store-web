@@ -89,40 +89,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/password/forgot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Forgot Password */
-        post: operations["forgot_password_api_v1_auth_password_forgot_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/password/reset": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Reset Password */
-        post: operations["reset_password_api_v1_auth_password_reset_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -139,42 +105,6 @@ export interface paths {
         head?: never;
         /** Update Me */
         patch: operations["update_me_api_v1_me_patch"];
-        trace?: never;
-    };
-    "/api/v1/me/addresses": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Addresses */
-        get: operations["list_addresses_api_v1_me_addresses_get"];
-        put?: never;
-        /** Create Address */
-        post: operations["create_address_api_v1_me_addresses_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me/addresses/{address_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Address */
-        delete: operations["delete_address_api_v1_me_addresses__address_id__delete"];
-        options?: never;
-        head?: never;
-        /** Update Address */
-        patch: operations["update_address_api_v1_me_addresses__address_id__patch"];
         trace?: never;
     };
     "/api/v1/admin/users": {
@@ -316,21 +246,41 @@ export interface paths {
         patch: operations["update_book_api_v1_admin_books__book_id__patch"];
         trace?: never;
     };
-    "/api/v1/admin/books/{book_id}/mark-sold": {
+    "/api/v1/admin/authors": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Authors */
+        get: operations["list_authors_api_v1_admin_authors_get"];
         put?: never;
-        /** Mark Sold */
-        post: operations["mark_sold_api_v1_admin_books__book_id__mark_sold_post"];
+        /** Create Author */
+        post: operations["create_author_api_v1_admin_authors_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/authors/{author_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Author */
+        get: operations["get_author_api_v1_admin_authors__author_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Author */
+        delete: operations["delete_author_api_v1_admin_authors__author_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Author */
+        patch: operations["update_author_api_v1_admin_authors__author_id__patch"];
         trace?: never;
     };
     "/api/v1/admin/categories": {
@@ -543,144 +493,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reservations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Mine */
-        get: operations["list_mine_api_v1_reservations_get"];
-        put?: never;
-        /** Reserve */
-        post: operations["reserve_api_v1_reservations_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reservations/{reservation_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel */
-        post: operations["cancel_api_v1_reservations__reservation_id__cancel_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reservations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Reservations */
-        get: operations["list_reservations_api_v1_admin_reservations_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reservations/{reservation_id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Cancel */
-        post: operations["cancel_api_v1_admin_reservations__reservation_id__cancel_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/book-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Mine */
-        get: operations["list_mine_api_v1_book_requests_get"];
-        put?: never;
-        /** Create */
-        post: operations["create_api_v1_book_requests_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/book-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Requests */
-        get: operations["list_requests_api_v1_admin_book_requests_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/book-requests/{request_id}/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve */
-        post: operations["resolve_api_v1_admin_book_requests__request_id__resolve_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reports/revenue": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Revenue */
-        get: operations["revenue_api_v1_admin_reports_revenue_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/inventory/overview": {
         parameters: {
             query?: never;
@@ -688,58 +500,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** Overview */
         get: operations["overview_api_v1_admin_inventory_overview_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reports/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Summary */
-        get: operations["summary_api_v1_admin_reports_summary_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reports/best-sellers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Best Sellers */
-        get: operations["best_sellers_api_v1_admin_reports_best_sellers_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/admin/reports/low-stock": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Low Stock */
-        get: operations["low_stock_api_v1_admin_reports_low_stock_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -752,75 +514,45 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** AddressCreate */
-        AddressCreate: {
-            /** Recipient */
-            recipient: string;
-            /** Phone */
-            phone: string;
-            /** Line */
-            line: string;
-            /** Ward */
-            ward: string;
-            /** District */
-            district: string;
-            /** Province */
-            province: string;
-            /**
-             * Is Default
-             * @default false
-             */
-            is_default: boolean;
+        /** AuthorCreate */
+        AuthorCreate: {
+            /** Name */
+            name: string;
+            /** Bio */
+            bio?: string | null;
         };
-        /** AddressRead */
-        AddressRead: {
-            /** Recipient */
-            recipient: string;
-            /** Phone */
-            phone: string;
-            /** Line */
-            line: string;
-            /** Ward */
-            ward: string;
-            /** District */
-            district: string;
-            /** Province */
-            province: string;
-            /**
-             * Is Default
-             * @default false
-             */
-            is_default: boolean;
+        /** AuthorRead */
+        AuthorRead: {
             /** Id */
             id: number;
+            /** Name */
+            name: string;
+            /** Bio */
+            bio: string | null;
+            /**
+             * Book Count
+             * @default 0
+             */
+            book_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
-        /** AddressUpdate */
-        AddressUpdate: {
-            /** Recipient */
-            recipient?: string | null;
-            /** Phone */
-            phone?: string | null;
-            /** Line */
-            line?: string | null;
-            /** Ward */
-            ward?: string | null;
-            /** District */
-            district?: string | null;
-            /** Province */
-            province?: string | null;
-            /** Is Default */
-            is_default?: boolean | null;
+        /** AuthorRef */
+        AuthorRef: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
         };
-        /** BestSeller */
-        BestSeller: {
-            /** Book Id */
-            book_id: number;
-            /** Title */
-            title: string;
-            /** Quantity Sold */
-            quantity_sold: number;
-            /** Revenue */
-            revenue: number;
+        /** AuthorUpdate */
+        AuthorUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
         };
         /** Body_upload_image_api_v1_admin_books__book_id__images_post */
         Body_upload_image_api_v1_admin_books__book_id__images_post: {
@@ -852,6 +584,8 @@ export interface components {
             published_year: number | null;
             /** Description */
             description: string | null;
+            /** Authors */
+            authors: components["schemas"]["AuthorRef"][];
             /** Images */
             images: components["schemas"]["BookImageRead"][];
             /** Is Visible */
@@ -861,8 +595,6 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
-            /** Cost Price */
-            cost_price: number;
             /** Quantity */
             quantity: number;
         };
@@ -895,17 +627,12 @@ export interface components {
             category_id: number;
             /** Title */
             title: string;
-            /** Author */
-            author?: string | null;
+            /** Author Ids */
+            author_ids?: number[];
             /** Publisher */
             publisher?: string | null;
             /** Published Year */
             published_year?: number | null;
-            /**
-             * Cost Price
-             * @default 0
-             */
-            cost_price: number;
             /** Sale Price */
             sale_price: number;
             /** Condition Pct */
@@ -955,6 +682,8 @@ export interface components {
             published_year: number | null;
             /** Description */
             description: string | null;
+            /** Authors */
+            authors: components["schemas"]["AuthorRef"][];
             /** Images */
             images: components["schemas"]["BookImageRead"][];
             /** Is Visible */
@@ -974,41 +703,6 @@ export interface components {
             /** Position */
             position: number;
         };
-        /** BookRequestCreate */
-        BookRequestCreate: {
-            /** Title */
-            title: string;
-            /** Author */
-            author?: string | null;
-            /** Note */
-            note?: string | null;
-        };
-        /** BookRequestRead */
-        BookRequestRead: {
-            /** Id */
-            id: number;
-            /** User Id */
-            user_id: number;
-            /** Title */
-            title: string;
-            /** Author */
-            author: string | null;
-            /** Note */
-            note: string | null;
-            status: components["schemas"]["BookRequestStatus"];
-            /** Admin Note */
-            admin_note: string | null;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-        };
-        /**
-         * BookRequestStatus
-         * @enum {string}
-         */
-        BookRequestStatus: "pending" | "available" | "rejected";
         /**
          * BookSort
          * @enum {string}
@@ -1016,27 +710,27 @@ export interface components {
         BookSort: "newest" | "price_asc" | "price_desc" | "relevance" | "title_asc" | "condition_desc";
         /**
          * BookUpdate
-         * @description Quantity is intentionally absent: stock changes go through `inventory`.
+         * @description `quantity` is applied through `inventory`, never set on the model directly.
          */
         BookUpdate: {
             /** Category Id */
             category_id?: number | null;
             /** Title */
             title?: string | null;
-            /** Author */
-            author?: string | null;
+            /** Author Ids */
+            author_ids?: number[] | null;
             /** Publisher */
             publisher?: string | null;
             /** Published Year */
             published_year?: number | null;
-            /** Cost Price */
-            cost_price?: number | null;
             /** Sale Price */
             sale_price?: number | null;
             /** Condition Pct */
             condition_pct?: number | null;
             /** Description */
             description?: string | null;
+            /** Quantity */
+            quantity?: number | null;
             /** Is Visible */
             is_visible?: boolean | null;
         };
@@ -1109,19 +803,6 @@ export interface components {
             /** Name */
             name: string;
         };
-        /** ForgotPasswordIn */
-        ForgotPasswordIn: {
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-        };
-        /**
-         * Granularity
-         * @enum {string}
-         */
-        Granularity: "day" | "month";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1135,6 +816,28 @@ export interface components {
             /** Ids */
             ids: number[];
         };
+        /**
+         * InventoryOverview
+         * @description Aggregates for the admin inventory home KPI cards.
+         */
+        InventoryOverview: {
+            /** Total Copies */
+            total_copies: number;
+            /** Total Titles */
+            total_titles: number;
+            /** Category Count */
+            category_count: number;
+            /** Categorized Pct */
+            categorized_pct: number;
+            /** Estimated Stock Value */
+            estimated_stock_value: number;
+            /** Good Condition Copies */
+            good_condition_copies: number;
+            /** Good Condition Pct */
+            good_condition_pct: number;
+            /** Intake This Week */
+            intake_this_week: number;
+        };
         /** LoginIn */
         LoginIn: {
             /**
@@ -1144,19 +847,6 @@ export interface components {
             email: string;
             /** Password */
             password: string;
-        };
-        /** LowStockBook */
-        LowStockBook: {
-            /** Book Id */
-            book_id: number;
-            /** Title */
-            title: string;
-            /** Slug */
-            slug: string;
-            /** Quantity */
-            quantity: number;
-            /** Is Visible */
-            is_visible: boolean;
         };
         /** OrderDetail */
         OrderDetail: {
@@ -1231,25 +921,16 @@ export interface components {
              */
             created_at: string;
         };
-        /** InventoryOverview */
-        InventoryOverview: {
-            total_copies: number;
-            total_titles: number;
-            category_count: number;
-            categorized_pct: number;
-            estimated_stock_value: number;
-            good_condition_copies: number;
-            good_condition_pct: number;
-            intake_this_week: number;
-        };
-        /** OrderSummaryReport */
-        OrderSummaryReport: {
-            /** Counts */
-            counts: components["schemas"]["StatusCount"][];
-            /** Total Orders */
-            total_orders: number;
-            /** Completed Revenue */
-            completed_revenue: number;
+        /** Page[AuthorRead] */
+        Page_AuthorRead_: {
+            /** Items */
+            items: components["schemas"]["AuthorRead"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Size */
+            size: number;
         };
         /** Page[BookAdminRead] */
         Page_BookAdminRead_: {
@@ -1273,32 +954,10 @@ export interface components {
             /** Size */
             size: number;
         };
-        /** Page[BookRequestRead] */
-        Page_BookRequestRead_: {
-            /** Items */
-            items: components["schemas"]["BookRequestRead"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Size */
-            size: number;
-        };
         /** Page[OrderSummary] */
         Page_OrderSummary_: {
             /** Items */
             items: components["schemas"]["OrderSummary"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Size */
-            size: number;
-        };
-        /** Page[ReservationRead] */
-        Page_ReservationRead_: {
-            /** Items */
-            items: components["schemas"]["ReservationRead"][];
             /** Total */
             total: number;
             /** Page */
@@ -1324,16 +983,15 @@ export interface components {
         PaymentMethod: "cod" | "bank_transfer";
         /** PlaceOrderIn */
         PlaceOrderIn: {
-            /** Address Id */
-            address_id: number;
+            /** Ship Recipient */
+            ship_recipient: string;
+            /** Ship Phone */
+            ship_phone: string;
+            /** Ship Address */
+            ship_address: string;
             payment_method: components["schemas"]["PaymentMethod"];
             /** Note */
             note?: string | null;
-            /**
-             * Reservation Ids
-             * @default []
-             */
-            reservation_ids: number[];
         };
         /** RegisterIn */
         RegisterIn: {
@@ -1348,87 +1006,6 @@ export interface components {
             full_name: string;
             /** Phone */
             phone?: string | null;
-        };
-        /** ReservationRead */
-        ReservationRead: {
-            /** Id */
-            id: number;
-            /** User Id */
-            user_id: number;
-            /** Book Id */
-            book_id: number;
-            /** Quantity */
-            quantity: number;
-            status: components["schemas"]["ReservationStatus"];
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /**
-             * Created At
-             * Format: date-time
-             */
-            created_at: string;
-            /**
-             * Book Title
-             * @default
-             */
-            book_title: string;
-            /**
-             * Book Slug
-             * @default
-             */
-            book_slug: string;
-            /** Cover Url */
-            cover_url?: string | null;
-        };
-        /**
-         * ReservationStatus
-         * @enum {string}
-         */
-        ReservationStatus: "active" | "converted" | "cancelled" | "expired";
-        /** ReserveIn */
-        ReserveIn: {
-            /** Book Id */
-            book_id: number;
-            /**
-             * Quantity
-             * @default 1
-             */
-            quantity: number;
-        };
-        /** ResetPasswordIn */
-        ResetPasswordIn: {
-            /** Token */
-            token: string;
-            /** New Password */
-            new_password: string;
-        };
-        /** ResolveIn */
-        ResolveIn: {
-            status: components["schemas"]["BookRequestStatus"];
-            /** Admin Note */
-            admin_note?: string | null;
-        };
-        /** RevenuePoint */
-        RevenuePoint: {
-            /**
-             * Period
-             * Format: date
-             */
-            period: string;
-            /** Revenue */
-            revenue: number;
-            /** Orders */
-            orders: number;
-        };
-        /** StatusCount */
-        StatusCount: {
-            /** Status */
-            status: string;
-            /** Count */
-            count: number;
         };
         /** StatusHistoryRead */
         StatusHistoryRead: {
@@ -1652,70 +1229,6 @@ export interface operations {
             };
         };
     };
-    forgot_password_api_v1_auth_password_forgot_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ForgotPasswordIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reset_password_api_v1_auth_password_reset_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResetPasswordIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -1769,140 +1282,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_addresses_api_v1_me_addresses_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AddressRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_address_api_v1_me_addresses_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddressCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AddressRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_address_api_v1_me_addresses__address_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                address_id: number;
-            };
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_address_api_v1_me_addresses__address_id__patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                address_id: number;
-            };
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AddressUpdate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AddressRead"];
                 };
             };
             /** @description Validation Error */
@@ -2042,6 +1421,7 @@ export interface operations {
             query?: {
                 text?: string | null;
                 category?: string | null;
+                author_id?: number | null;
                 price_min?: number | null;
                 price_max?: number | null;
                 condition_min?: number | null;
@@ -2113,6 +1493,7 @@ export interface operations {
             query?: {
                 text?: string | null;
                 category?: string | null;
+                author_id?: number | null;
                 price_min?: number | null;
                 price_max?: number | null;
                 condition_min?: number | null;
@@ -2288,12 +1669,82 @@ export interface operations {
             };
         };
     };
-    mark_sold_api_v1_admin_books__book_id__mark_sold_post: {
+    list_authors_api_v1_admin_authors_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AuthorRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_author_api_v1_admin_authors_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthorRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_author_api_v1_admin_authors__author_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                book_id: number;
+                author_id: number;
             };
             cookie?: {
                 access_token?: string | null;
@@ -2307,7 +1758,77 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BookAdminRead"];
+                    "application/json": components["schemas"]["AuthorRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_author_api_v1_admin_authors__author_id__delete: {
+        parameters: {
+            query?: {
+                merge_into?: number | null;
+            };
+            header?: never;
+            path: {
+                author_id: number;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_author_api_v1_admin_authors__author_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                author_id: number;
+            };
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AuthorUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthorRead"];
                 };
             };
             /** @description Validation Error */
@@ -2936,443 +2457,6 @@ export interface operations {
             };
         };
     };
-    list_mine_api_v1_reservations_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReservationRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    reserve_api_v1_reservations_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReserveIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReservationRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    cancel_api_v1_reservations__reservation_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reservation_id: number;
-            };
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReservationRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_reservations_api_v1_admin_reservations_get: {
-        parameters: {
-            query?: {
-                status?: components["schemas"]["ReservationStatus"] | null;
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Page_ReservationRead_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    cancel_api_v1_admin_reservations__reservation_id__cancel_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reservation_id: number;
-            };
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ReservationRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_mine_api_v1_book_requests_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BookRequestRead"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_api_v1_book_requests_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BookRequestCreate"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BookRequestRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_requests_api_v1_admin_book_requests_get: {
-        parameters: {
-            query?: {
-                status?: components["schemas"]["BookRequestStatus"] | null;
-                page?: number;
-                size?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Page_BookRequestRead_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    resolve_api_v1_admin_book_requests__request_id__resolve_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                request_id: number;
-            };
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResolveIn"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BookRequestRead"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    revenue_api_v1_admin_reports_revenue_get: {
-        parameters: {
-            query?: {
-                granularity?: components["schemas"]["Granularity"];
-                from?: string | null;
-                to?: string | null;
-            };
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RevenuePoint"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    summary_api_v1_admin_reports_summary_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OrderSummaryReport"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    best_sellers_api_v1_admin_reports_best_sellers_get: {
-        parameters: {
-            query?: {
-                limit?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BestSeller"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    low_stock_api_v1_admin_reports_low_stock_get: {
-        parameters: {
-            query?: {
-                threshold?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: {
-                access_token?: string | null;
-            };
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["LowStockBook"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     overview_api_v1_admin_inventory_overview_get: {
         parameters: {
             query?: never;
@@ -3384,6 +2468,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3392,6 +2477,7 @@ export interface operations {
                     "application/json": components["schemas"]["InventoryOverview"];
                 };
             };
+            /** @description Validation Error */
             422: {
                 headers: {
                     [name: string]: unknown;

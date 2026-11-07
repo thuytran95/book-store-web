@@ -1,7 +1,7 @@
 """Inventory: the only module allowed to reason about / change `books.quantity`.
 
 Design: an "allocation" is not a table. It is derived from rows the callers insert in the
-same transaction (pending order items, active reservations). `allocate` takes row locks on
+same transaction (pending order items). `allocate` takes row locks on
 the books in ascending id order, re-computes availability, and fails with OutOfStock if the
 request does not fit. Because the locks are held until the caller's transaction ends, two
 concurrent checkouts of the last copy cannot both pass.
@@ -10,8 +10,7 @@ All methods run inside the caller's transaction and never commit.
 """
 
 from collections.abc import Iterable
-from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from dataclasses import dataclass
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import NotFound, OutOfStock
 from app.modules.catalog.models import Book
 from app.modules.orders.models import Order, OrderItem, OrderStatus
-from app.modules.reservations.models import Reservation, ReservationStatus
 
 
 @dataclass(frozen=True)
@@ -31,16 +29,9 @@ class StockLine:
 @dataclass(frozen=True)
 class OrderOwner:
     id: int
-    # Reservations this order is converting; they must not block their own order.
-    reservation_ids: tuple[int, ...] = field(default=())
 
 
-@dataclass(frozen=True)
-class ReservationOwner:
-    id: int
-
-
-Owner = OrderOwner | ReservationOwner
+Owner = OrderOwner
 
 
 class Inventory:
@@ -52,7 +43,7 @@ class Inventory:
     async def available(
         self, book_ids: Iterable[int], owner: Owner | None = None
     ) -> dict[int, int]:
-        """quantity - pending order items - active unexpired reservations (not the owner's)."""
+        """quantity - items in pending orders (not the owner's)."""
         ids = sorted(set(book_ids))
         if not ids:
             return {}
@@ -70,25 +61,9 @@ class Inventory:
             .where(OrderItem.book_id.in_(ids), Order.status == OrderStatus.pending)
             .group_by(OrderItem.book_id)
         )
-        if isinstance(owner, OrderOwner):
+        if owner is not None:
             pending = pending.where(Order.id != owner.id)
         for book_id, qty in await self.session.execute(pending):
-            result[book_id] -= int(qty)
-
-        held = (
-            select(Reservation.book_id, func.sum(Reservation.quantity))
-            .where(
-                Reservation.book_id.in_(ids),
-                Reservation.status == ReservationStatus.active,
-                Reservation.expires_at > datetime.now(UTC),  # lazy expiry
-            )
-            .group_by(Reservation.book_id)
-        )
-        if isinstance(owner, ReservationOwner):
-            held = held.where(Reservation.id != owner.id)
-        elif isinstance(owner, OrderOwner) and owner.reservation_ids:
-            held = held.where(Reservation.id.not_in(owner.reservation_ids))
-        for book_id, qty in await self.session.execute(held):
             result[book_id] -= int(qty)
 
         return {book_id: max(0, qty) for book_id, qty in result.items()}
@@ -121,8 +96,6 @@ class Inventory:
 
     async def commit(self, owner: Owner) -> None:
         """Turns an order's allocation into a real deduction. Call while status is `pending`."""
-        if not isinstance(owner, OrderOwner):
-            return  # reservations are never deducted; they convert into orders
         items = await self._order_items(owner.id)
         books = await self._lock_books(i.book_id for i in items)
         for item in items:
@@ -137,8 +110,6 @@ class Inventory:
         Call before changing the order status: `pending` just stops counting once the
         order is cancelled, while `confirmed`/`shipping` orders were deducted at commit.
         """
-        if not isinstance(owner, OrderOwner):
-            return  # a reservation stops counting once its status leaves `active`
         order = await self.session.get(Order, owner.id)
         if order is None or order.status not in (OrderStatus.confirmed, OrderStatus.shipping):
             return
@@ -148,7 +119,7 @@ class Inventory:
             books[item.book_id].quantity += item.quantity
 
     async def set_quantity(self, book_id: int, quantity: int) -> None:
-        """Admin edit / mark sold (quantity 0)."""
+        """Admin edit of the stock count."""
         if quantity < 0:
             raise ValueError("quantity must be >= 0")
         books = await self._lock_books([book_id])

@@ -4,8 +4,6 @@ const LOGIN_PATHS = [
   /^\/account(\/|$)/,
   /^\/checkout(\/|$)/,
   /^\/orders(\/|$)/,
-  /^\/reservations(\/|$)/,
-  /^\/book-requests(\/|$)/,
 ];
 const ADMIN_PATH = /^\/admin(\/|$)/;
 
@@ -46,10 +44,6 @@ export const config = {
     "/checkout/:path*",
     "/orders",
     "/orders/:path*",
-    "/reservations",
-    "/reservations/:path*",
-    "/book-requests",
-    "/book-requests/:path*",
     "/admin",
     "/admin/:path*",
   ],

@@ -12,7 +12,7 @@ export type OrderSummary = components["schemas"]["OrderSummary"];
 /**
  * Place an order from the cart. Errors (switch on `ApiError.code`):
  * - OUT_OF_STOCK: `details.book_id`, `requested`, `available`
- * - CART_EMPTY, BOOK_UNAVAILABLE, RESERVATION_INVALID
+ * - CART_EMPTY, BOOK_UNAVAILABLE, VALIDATION_ERROR
  */
 export function usePlaceOrder() {
   const qc = useQueryClient();
@@ -25,7 +25,6 @@ export function usePlaceOrder() {
       Promise.all([
         qc.invalidateQueries({ queryKey: CART_KEY }),
         qc.invalidateQueries({ queryKey: ["orders"] }),
-        qc.invalidateQueries({ queryKey: ["reservations"] }),
         qc.invalidateQueries({ queryKey: ["book"] }),
         qc.invalidateQueries({ queryKey: ["books"] }),
       ]),

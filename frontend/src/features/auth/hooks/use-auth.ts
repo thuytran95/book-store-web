@@ -8,7 +8,6 @@ import { SESSION_KEY } from "@/lib/session";
 
 type LoginIn = components["schemas"]["LoginIn"];
 type RegisterIn = components["schemas"]["RegisterIn"];
-type ResetPasswordIn = components["schemas"]["ResetPasswordIn"];
 
 /** Only allow same-site relative redirects. */
 export function safeNext(next: string | null | undefined, fallback = "/"): string {
@@ -59,23 +58,6 @@ export function useLogout() {
       qc.setQueryData(SESSION_KEY, null);
       router.replace("/");
       router.refresh();
-    },
-  });
-}
-
-export function useForgotPassword() {
-  return useMutation({
-    mutationFn: async (email: string) => {
-      await api.POST("/api/v1/auth/password/forgot", { body: { email } });
-    },
-  });
-}
-
-/** Errors: TOKEN_INVALID. */
-export function useResetPassword() {
-  return useMutation({
-    mutationFn: async (body: ResetPasswordIn) => {
-      await api.POST("/api/v1/auth/password/reset", { body });
     },
   });
 }

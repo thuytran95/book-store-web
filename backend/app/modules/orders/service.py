@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 from app.core.errors import (
     BookUnavailable,
     CartEmpty,
-    Conflict,
     Forbidden,
     InvalidTransition,
     NotFound,
@@ -31,8 +30,7 @@ from app.modules.orders.schemas import (
     OrderSummary,
     PlaceOrderIn,
 )
-from app.modules.reservations.models import Reservation, ReservationStatus
-from app.modules.users.models import Address, User, UserRole
+from app.modules.users.models import User, UserRole
 
 _CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
@@ -43,41 +41,12 @@ def generate_code() -> str:
     return f"BS{datetime.now(UTC):%y%m%d}-{suffix}"
 
 
-async def _load_reservations(
-    session: AsyncSession, user: User, ids: list[int]
-) -> list[Reservation]:
-    if not ids:
-        return []
-    rows = list(
-        await session.scalars(
-            select(Reservation).where(Reservation.id.in_(ids)).with_for_update()
-        )
-    )
-    now = datetime.now(UTC)
-    if len(rows) != len(set(ids)):
-        raise NotFound("Reservation not found")
-    for r in rows:
-        if r.user_id != user.id:
-            raise NotFound("Reservation not found")
-        if r.status != ReservationStatus.active or r.expires_at <= now:
-            raise Conflict("Reservation is no longer active", code="RESERVATION_INVALID")
-    return rows
-
-
 async def place_order(session: AsyncSession, user: User, data: PlaceOrderIn) -> OrderDetail:
-    """Cart + reservations -> order, atomically (the caller's transaction)."""
-    address = await session.get(Address, data.address_id)
-    if address is None or address.user_id != user.id:
-        raise NotFound("Address not found")
-
-    reservations = await _load_reservations(session, user, data.reservation_ids)
-
+    """Cart -> order, atomically (the caller's transaction)."""
     cart = await cart_service.get_or_create_cart(session, user)
     cart_items = list(await session.scalars(select(CartItem).where(CartItem.cart_id == cart.id)))
 
     wanted: dict[int, int] = {i.book_id: i.quantity for i in cart_items}
-    for r in reservations:  # a hold takes precedence over a cart line for the same book
-        wanted[r.book_id] = r.quantity
     if not wanted:
         raise CartEmpty("Cart is empty")
 
@@ -94,11 +63,9 @@ async def place_order(session: AsyncSession, user: User, data: PlaceOrderIn) -> 
         user_id=user.id,
         status=OrderStatus.pending,
         payment_method=data.payment_method,
-        ship_recipient=address.recipient,
-        ship_phone=address.phone,
-        ship_address=", ".join(
-            [address.line, address.ward, address.district, address.province]
-        ),
+        ship_recipient=data.ship_recipient,
+        ship_phone=data.ship_phone,
+        ship_address=data.ship_address,
         subtotal=0,
         shipping_fee=0,
         total=0,
@@ -110,7 +77,7 @@ async def place_order(session: AsyncSession, user: User, data: PlaceOrderIn) -> 
     inventory = Inventory(session)
     await inventory.allocate(
         [StockLine(book_id, qty) for book_id, qty in wanted.items()],
-        OrderOwner(order.id, tuple(r.id for r in reservations)),
+        OrderOwner(order.id),
     )
 
     subtotal = 0
@@ -126,8 +93,6 @@ async def place_order(session: AsyncSession, user: User, data: PlaceOrderIn) -> 
     session.add(OrderStatusHistory(
         order_id=order.id, from_status=None, to_status=OrderStatus.pending, actor_id=user.id
     ))
-    for r in reservations:
-        r.status = ReservationStatus.converted
     await cart_service.clear(session, user)
     await session.flush()
     return await get_order(session, order.id, user)

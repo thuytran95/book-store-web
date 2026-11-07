@@ -75,7 +75,6 @@ export default async function BookDetailPage({ params }: Props) {
         <div className="lg:col-span-3">
           <BookDetailBuyBox
             bookId={book.id}
-            title={book.title}
             salePrice={book.sale_price}
             available={book.available}
             visible={book.is_visible}

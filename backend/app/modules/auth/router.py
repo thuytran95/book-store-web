@@ -5,8 +5,7 @@ from fastapi import APIRouter, Cookie, Request, Response, status
 from app.core.deps import CurrentUser, SessionDep
 from app.core.ratelimit import limiter
 from app.modules.auth import service
-from app.modules.auth.schemas import ForgotPasswordIn, LoginIn, RegisterIn, ResetPasswordIn
-from app.modules.mail import get_mailer
+from app.modules.auth.schemas import LoginIn, RegisterIn
 from app.modules.users.schemas import UserRead
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -41,15 +40,3 @@ async def refresh(
     service.set_auth_cookies(response, user)
     return user
 
-
-@router.post("/password/forgot", status_code=status.HTTP_202_ACCEPTED)
-@limiter.limit("5/minute")
-async def forgot_password(request: Request, body: ForgotPasswordIn, session: SessionDep):
-    await service.request_password_reset(session, body.email, get_mailer())
-    return {"status": "accepted"}
-
-
-@router.post("/password/reset", status_code=status.HTTP_204_NO_CONTENT)
-@limiter.limit("10/minute")
-async def reset_password(request: Request, body: ResetPasswordIn, session: SessionDep):
-    await service.reset_password(session, body.token, body.new_password)

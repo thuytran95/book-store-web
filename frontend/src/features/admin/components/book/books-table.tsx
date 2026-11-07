@@ -18,13 +18,12 @@ import {
   useAdminBooks,
   useAdminCategories,
   useDeleteBook,
-  useMarkSold,
   useToggleVisible,
   type AdminBookFilters,
 } from "../../hooks/use-admin";
 import { LinkButton } from "@/components/shared/link-button";
 
-type Target = { id: number; title: string; kind: "delete" | "sold" };
+type Target = { id: number; title: string };
 
 export function BooksTable() {
   const [text, setText] = useState("");
@@ -47,7 +46,6 @@ export function BooksTable() {
   const { data: categories = [] } = useAdminCategories();
   const { data, isLoading, error } = useAdminBooks(filters);
   const toggle = useToggleVisible();
-  const sold = useMarkSold();
   const remove = useDeleteBook();
   const pageCount = data ? Math.max(1, Math.ceil(data.total / data.size)) : 1;
 
@@ -161,16 +159,8 @@ export function BooksTable() {
                     </Button>
                     <Button
                       size="xs"
-                      variant="ghost"
-                      disabled={b.quantity === 0}
-                      onClick={() => setTarget({ id: b.id, title: b.title, kind: "sold" })}
-                    >
-                      Đánh dấu bán
-                    </Button>
-                    <Button
-                      size="xs"
                       variant="destructive"
-                      onClick={() => setTarget({ id: b.id, title: b.title, kind: "delete" })}
+                      onClick={() => setTarget({ id: b.id, title: b.title })}
                     >
                       Xoá
                     </Button>
@@ -187,34 +177,20 @@ export function BooksTable() {
       <ConfirmDialog
         open={target !== null}
         onOpenChange={(o) => !o && setTarget(null)}
-        title={target?.kind === "sold" ? "Đánh dấu đã bán?" : "Xoá sách?"}
-        message={
-          target?.kind === "sold"
-            ? `“${target.title}” sẽ được đặt số lượng = 0.`
-            : `“${target?.title}” sẽ bị xoá, hoặc ẩn nếu đã có lịch sử đơn.`
-        }
-        destructive={target?.kind === "delete"}
-        confirmLabel={target?.kind === "sold" ? "Đánh dấu bán" : "Xoá"}
-        loading={sold.isPending || remove.isPending}
+        title="Xoá sách?"
+        message={`“${target?.title}” sẽ bị xoá, hoặc ẩn nếu đã có lịch sử đơn.`}
+        destructive
+        confirmLabel="Xoá"
+        loading={remove.isPending}
         onConfirm={() => {
           if (!target) return;
-          if (target.kind === "sold") {
-            sold.mutate(target.id, {
-              onSuccess: () => {
-                toast.success("Đã đánh dấu hết hàng");
-                setTarget(null);
-              },
-              onError: (e) => toast.error(errorMessage(e)),
-            });
-          } else {
-            remove.mutate(target.id, {
-              onSuccess: (r) => {
-                toast.success(r.hidden ? "Sách có lịch sử — đã ẩn thay vì xoá" : "Đã xoá sách");
-                setTarget(null);
-              },
-              onError: (e) => toast.error(errorMessage(e)),
-            });
-          }
+          remove.mutate(target.id, {
+            onSuccess: (r) => {
+              toast.success(r.hidden ? "Sách có lịch sử — đã ẩn thay vì xoá" : "Đã xoá sách");
+              setTarget(null);
+            },
+            onError: (e) => toast.error(errorMessage(e)),
+          });
         }}
       />
     </div>

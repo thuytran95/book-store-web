@@ -10,12 +10,11 @@ import { formatCompactCount } from "@/lib/format";
 import { toast } from "@/lib/toast";
 import { useAdminInventoryFilters } from "../../hooks/use-admin-inventory-filters";
 import {
+  useAdminAuthor,
   useAdminBooks,
   useAdminCategories,
-  useAdminReservations,
   useDeleteBook,
   useInventoryOverview,
-  useMarkSold,
 } from "../../hooks/use-admin";
 import { toAdminInventoryRow } from "../../inventory/types";
 import { InventoryBatchFooter } from "./inventory-batch-footer";
@@ -29,7 +28,6 @@ export function InventoryHome() {
   const [searchInput, setSearchInput] = useState(filters.text ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
-  const [soldTarget, setSoldTarget] = useState<number | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
   useEffect(() => {
@@ -46,19 +44,12 @@ export function InventoryHome() {
   const overview = useInventoryOverview();
   const categories = useAdminCategories();
   const books = useAdminBooks(filters);
-  const reservations = useAdminReservations("active", 1);
+  const author = useAdminAuthor(filters.author_id);
   const remove = useDeleteBook();
-  const sold = useMarkSold();
-
-  const heldIds = useMemo(() => {
-    const set = new Set<number>();
-    for (const r of reservations.data?.items ?? []) set.add(r.book_id);
-    return set;
-  }, [reservations.data?.items]);
 
   const rows = useMemo(
-    () => (books.data?.items ?? []).map((b) => toAdminInventoryRow(b, heldIds)),
-    [books.data?.items, heldIds],
+    () => (books.data?.items ?? []).map(toAdminInventoryRow),
+    [books.data?.items],
   );
 
   const pageCount = books.data
@@ -252,6 +243,22 @@ export function InventoryHome() {
         />
       </div>
 
+      {filters.author_id && (
+        <div className="flex items-center gap-space-sm">
+          <span className="inline-flex items-center gap-1 rounded-full bg-secondary-container py-1 pl-3 pr-1.5 text-label-lg text-on-secondary-container">
+            Tác giả: {author.data?.name ?? "…"}
+            <button
+              type="button"
+              aria-label="Bỏ lọc tác giả"
+              className="inline-flex size-6 items-center justify-center rounded-full hover:bg-on-secondary-container/10"
+              onClick={() => setFilter("author_id", "")}
+            >
+              <MaterialIcon name="close" className="text-[16px]" />
+            </button>
+          </span>
+        </div>
+      )}
+
       <InventoryToolbar
         search={searchInput}
         onSearchChange={setSearchInput}
@@ -287,7 +294,6 @@ export function InventoryHome() {
           isLoading={books.isLoading}
           error={books.error}
           onEdit={(id) => router.push(`/admin/books/${id}`)}
-          onMarkSold={(id) => setSoldTarget(id)}
         />
         <InventoryBatchFooter
           selectedCount={selected.size}
@@ -314,24 +320,6 @@ export function InventoryHome() {
         onConfirm={() => void runBatchDelete()}
       />
 
-      <ConfirmDialog
-        open={soldTarget !== null}
-        onOpenChange={(o) => !o && setSoldTarget(null)}
-        title="Đánh dấu đã bán?"
-        message="Sách sẽ được đặt số lượng = 0."
-        confirmLabel="Xác nhận"
-        loading={sold.isPending}
-        onConfirm={() => {
-          if (soldTarget === null) return;
-          sold.mutate(soldTarget, {
-            onSuccess: () => {
-              toast.success("Đã cập nhật tồn kho");
-              setSoldTarget(null);
-            },
-            onError: (e) => toast.error(errorMessage(e)),
-          });
-        }}
-      />
     </div>
   );
 }

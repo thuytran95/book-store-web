@@ -5,7 +5,9 @@ Monorepo: `backend/` (FastAPI, Python 3.12, async SQLAlchemy 2, Alembic, Postgre
 TanStack Query, react-hook-form + zod v4). REST API under `/api/v1`. UI copy is Vietnamese.
 
 Out of scope by design (don't add unless asked): online payment, coupons, reviews/wishlist,
-email/Zalo notifications, shipping integrations, Excel import.
+email/Zalo notifications, shipping integrations, Excel import. Removed on purpose (see
+`docs/de-xuat-xoa-chuc-nang-du-thua.md`): book requests, reservations, forgot/reset password + mail,
+revenue/best-seller reports, saved address book, mark-sold, cost price.
 
 # Commands
 
@@ -39,13 +41,12 @@ There is no test suite in either app.
   `pagination.py` (`PageDep`, `Page[T]`), `types.py` (`Money`, `Phone`, `ConditionPct`, ...).
 - `modules/<name>/`: `models.py`, `schemas.py`, `service.py`, `router.py` (buyer/public) and
   `admin_router.py` (prefix `/admin`, `dependencies=[Depends(require_admin)]`).
-  Modules: auth, users, catalog (+ `search.py`), cart, orders (+ `state_machine.py`), reservations,
-  book_requests, inventory, media, mail, reports (+ `inventory_router.py`).
-- `jobs/expire_reservations.py`: APScheduler job started in the app lifespan (every 10 min).
+  Modules: auth, users, catalog (+ `search.py`), cart, orders (+ `state_machine.py`), inventory, media,
+  reports (`inventory_router.py`: admin inventory overview only).
 - `cli.py`: `seed-admin`, `seed-demo`.
 
 ## Frontend (`frontend/src/`)
-- `app/`: route groups `(shop)` (storefront, buyer pages), `(auth)` (login/register/reset), `admin/`.
+- `app/`: route groups `(shop)` (storefront, buyer pages), `(auth)` (login/register), `admin/`.
   Pages are thin: they render a component from `features/`.
 - `features/<domain>/components|hooks/`: domain UI and TanStack Query hooks (re-exported from `hooks/index.ts`).
   `features/catalog/server.ts` holds cached server-side fetchers for RSC pages.
@@ -100,7 +101,7 @@ Frontend
 
 - Changing a backend schema or endpoint: restart the backend, then run `npm run gen:api` and commit the
   updated `src/lib/api/schema.d.ts`. Otherwise the frontend types drift.
-- Alembic migrations are hand-numbered (`0001_...`, revision `"0009"`, `down_revision = "0008"`). Follow
+- Alembic migrations are hand-numbered (`0001_...`, revision `"0010"`, `down_revision = "0009"`). Follow
   that rather than autogenerate hashes. New model modules must be imported in `alembic/env.py`. Postgres
   enums use `postgresql.ENUM(..., create_type=False)` + `.create(checkfirst=True)`.
 - Search depends on Postgres extensions `unaccent`, `pg_trgm`, `citext` (created by `backend/docker/init-db.sql`;

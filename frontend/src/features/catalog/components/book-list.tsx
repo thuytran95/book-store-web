@@ -49,16 +49,11 @@ export function BookList({ initial }: { initial?: { query: BookQuery; data: Book
         ) : data && data.items.length === 0 ? (
           <EmptyState
             title="Không tìm thấy sách phù hợp"
-            description="Thử bỏ bớt bộ lọc, hoặc gửi yêu cầu để chúng tôi tìm giúp bạn."
+            description="Thử bỏ bớt bộ lọc hoặc tìm với từ khoá khác."
             action={
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={reset}>
-                  Xoá bộ lọc
-                </Button>
-                <Button render={<a href={`/book-requests?title=${encodeURIComponent(filters.text ?? "")}`} />}>
-                  Yêu cầu tìm sách
-                </Button>
-              </div>
+              <Button variant="outline" onClick={reset}>
+                Xoá bộ lọc
+              </Button>
             }
           />
         ) : (

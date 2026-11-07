@@ -1,21 +1,24 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { PriceTag } from "@/components/shared/badges";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { FormField } from "@/components/ui/form-field";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { AddressPicker } from "@/features/account/components/address-picker";
-import { useAddresses } from "@/features/account/hooks";
 import { usePlaceOrder } from "@/features/orders/hooks";
 import { ApiError, hasCode } from "@/lib/api/errors";
+import { applyServerErrors } from "@/lib/forms";
 import { formatVnd } from "@/lib/format";
+import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
-import { checkoutSchema } from "@/lib/validation/checkout";
+import { checkoutSchema, type CheckoutForm } from "@/lib/validation/checkout";
 import { cn } from "@/lib/utils";
 import { useCart } from "../hooks/use-cart";
 import { LinkButton } from "@/components/shared/link-button";
@@ -25,33 +28,44 @@ const SHIPPING_FEE = 0; // open question: flat / threshold / admin-entered. Serv
 
 export function CheckoutView() {
   const router = useRouter();
-  const params = useSearchParams();
-  const reservationIds = useMemo(
-    () =>
-      (params.get("reservation") ?? "")
-        .split(",")
-        .map(Number)
-        .filter((n) => Number.isInteger(n) && n > 0),
-    [params],
-  );
-
+  const { session } = useSession();
   const { items, total, isLoading: cartLoading, remove } = useCart();
-  const { data: addresses, isLoading: addrLoading } = useAddresses();
   const place = usePlaceOrder();
 
-  const [addressId, setAddressId] = useState<number | null>(null);
-  const [payment, setPayment] = useState<"cod" | "bank_transfer">("cod");
-  const [note, setNote] = useState("");
-  const [fieldError, setFieldError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setError,
+    getValues,
+    formState: { errors },
+  } = useForm<CheckoutForm>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      ship_recipient: "",
+      ship_phone: "",
+      ship_address: "",
+      payment_method: "cod",
+      note: "",
+    },
+  });
+  const payment = watch("payment_method");
 
+  // Prefill the recipient from the profile once, without overwriting what the buyer typed.
+  const user = session?.user;
   useEffect(() => {
-    if (addressId === null && addresses?.length) {
-      setAddressId((addresses.find((a) => a.is_default) ?? addresses[0]).id);
-    }
-  }, [addresses, addressId]);
+    if (!user) return;
+    const v = getValues();
+    reset({
+      ...v,
+      ship_recipient: v.ship_recipient || user.full_name,
+      ship_phone: v.ship_phone || (user.phone ?? ""),
+    });
+  }, [user, reset, getValues]);
 
-  if (cartLoading || addrLoading) return <Skeleton className="h-64" />;
-  if (items.length === 0 && reservationIds.length === 0) {
+  if (cartLoading) return <Skeleton className="h-64" />;
+  if (items.length === 0) {
     return (
       <EmptyState
         title="Giỏ hàng trống"
@@ -67,35 +81,38 @@ export function CheckoutView() {
       : undefined;
   const culprit = items.find((i) => i.book.id === outOfStockBookId);
 
-  function submit() {
-    const parsed = checkoutSchema.safeParse({
-      address_id: addressId ?? undefined,
-      payment_method: payment,
-      note: note || undefined,
-    });
-    if (!parsed.success) {
-      setFieldError(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
-      return;
-    }
-    setFieldError(null);
+  const submit = handleSubmit((v) =>
     place.mutate(
-      { ...parsed.data, note: parsed.data.note ?? null, reservation_ids: reservationIds },
+      { ...v, note: v.note || null },
       {
         onSuccess: (order) => {
           toast.success(`Đặt hàng thành công. Mã đơn ${order.code}`);
           router.replace(`/orders/${order.id}?placed=1`);
         },
+        onError: (e) => applyServerErrors(e, setError),
       },
-    );
-  }
+    ),
+  );
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_22rem]">
+    <form noValidate onSubmit={submit} className="grid gap-6 md:grid-cols-[1fr_22rem]">
       <div className="grid content-start gap-6">
-        <section aria-labelledby="co-addr" className="grid gap-2">
-          <h2 id="co-addr" className="font-semibold">Địa chỉ giao hàng</h2>
-          <AddressPicker addresses={addresses ?? []} value={addressId} onChange={setAddressId} />
-          {fieldError && <p role="alert" className="text-sm text-destructive">{fieldError}</p>}
+        <section aria-labelledby="co-addr" className="grid gap-3">
+          <h2 id="co-addr" className="font-semibold">Thông tin giao hàng</h2>
+          <FormField label="Người nhận" required error={errors.ship_recipient?.message}>
+            <Input autoComplete="name" {...register("ship_recipient")} />
+          </FormField>
+          <FormField label="Số điện thoại" required error={errors.ship_phone?.message}>
+            <Input type="tel" autoComplete="tel" {...register("ship_phone")} />
+          </FormField>
+          <FormField
+            label="Địa chỉ"
+            required
+            hint="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
+            error={errors.ship_address?.message}
+          >
+            <Textarea autoComplete="street-address" maxLength={500} {...register("ship_address")} />
+          </FormField>
         </section>
 
         <section aria-labelledby="co-pay" className="grid gap-2">
@@ -116,10 +133,9 @@ export function CheckoutView() {
               >
                 <input
                   type="radio"
-                  name="payment"
+                  value={value}
                   className="accent-primary"
-                  checked={payment === value}
-                  onChange={() => setPayment(value)}
+                  {...register("payment_method")}
                 />
                 {label}
               </label>
@@ -134,8 +150,8 @@ export function CheckoutView() {
           )}
         </section>
 
-        <FormField label="Ghi chú" hint="Tuỳ chọn">
-          <Textarea value={note} maxLength={500} onChange={(e) => setNote(e.target.value)} />
+        <FormField label="Ghi chú" hint="Tuỳ chọn" error={errors.note?.message}>
+          <Textarea maxLength={500} {...register("note")} />
         </FormField>
       </div>
 
@@ -151,9 +167,6 @@ export function CheckoutView() {
               <span className="tabular-nums">{formatVnd(i.line_total)}</span>
             </li>
           ))}
-          {reservationIds.length > 0 && (
-            <li className="text-muted-foreground">+ {reservationIds.length} lượt giữ sách sẽ được thêm vào đơn</li>
-          )}
         </ul>
         <div className="mt-3 flex justify-between text-sm">
           <span>Phí vận chuyển</span>
@@ -168,20 +181,22 @@ export function CheckoutView() {
           <div className="mt-3 grid gap-2">
             <ErrorMessage error={err} />
             {culprit && (
-              <Button variant="outline" size="sm" onClick={() => { remove(culprit.book.id); place.reset(); }}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => { remove(culprit.book.id); place.reset(); }}
+              >
                 Xoá &quot;{culprit.book.title}&quot; khỏi giỏ
               </Button>
             )}
           </div>
         )}
 
-        <Button className="mt-4 w-full" size="lg" disabled={place.isPending || !addresses?.length} onClick={submit}>
+        <Button type="submit" className="mt-4 w-full" size="lg" disabled={place.isPending}>
           Đặt hàng
         </Button>
-        {!addresses?.length && (
-          <p className="mt-2 text-xs text-muted-foreground">Thêm địa chỉ giao hàng để tiếp tục.</p>
-        )}
       </aside>
-    </div>
+    </form>
   );
 }

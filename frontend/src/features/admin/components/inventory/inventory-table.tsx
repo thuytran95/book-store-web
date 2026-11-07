@@ -12,13 +12,13 @@ import { toast } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import type { AdminInventoryRow, ShelfStatus } from "../../inventory/types";
 
-const SHELF: Record<ShelfStatus> = {
+const SHELF: Record<ShelfStatus, { label: string; className: string }> = {
   on_shelf: {
     label: "Còn hàng",
     className: "bg-secondary-container/70 text-on-secondary-container",
   },
   held: {
-    label: "Đang giữ hàng",
+    label: "Chờ xác nhận đơn",
     className: "bg-tertiary-fixed text-on-tertiary-fixed",
   },
   sold: {
@@ -39,7 +39,6 @@ export function InventoryTable({
   isLoading,
   error,
   onEdit,
-  onMarkSold,
 }: {
   rows: AdminInventoryRow[];
   selectedIds: Set<number>;
@@ -48,7 +47,6 @@ export function InventoryTable({
   isLoading?: boolean;
   error: unknown;
   onEdit: (id: number) => void;
-  onMarkSold: (id: number) => void;
 }) {
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />;
   if (error) return <ErrorMessage error={error} />;
@@ -196,12 +194,6 @@ export function InventoryTable({
                       title="Chỉnh sửa"
                       icon="edit"
                       onClick={() => onEdit(row.id)}
-                    />
-                    <IconBtn
-                      title="Xuất bán"
-                      icon="shopping_cart_checkout"
-                      onClick={() => onMarkSold(row.id)}
-                      className="hover:bg-secondary-container hover:text-on-secondary-container"
                     />
                   </div>
                 </td>

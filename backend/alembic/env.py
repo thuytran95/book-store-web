@@ -8,12 +8,9 @@ from app.core.config import get_settings
 from app.core.db import Base
 
 # Import every module's models here so autogenerate sees them.
-from app.modules.auth import models as _auth  # noqa: F401
-from app.modules.book_requests import models as _book_requests  # noqa: F401
 from app.modules.cart import models as _cart  # noqa: F401
 from app.modules.catalog import models as _catalog  # noqa: F401
 from app.modules.orders import models as _orders  # noqa: F401
-from app.modules.reservations import models as _reservations  # noqa: F401
 from app.modules.users import models as _users  # noqa: F401
 
 config = context.config
