@@ -16,7 +16,6 @@ const PRIMARY_LINKS = [
   { href: "/admin", label: "Quản lý sách", icon: "inventory_2", exact: true },
   { href: "/admin/categories", label: "Thể loại sách", icon: "account_tree" },
   { href: "/admin/authors", label: "Tác giả", icon: "history_edu" },
-  { href: "/admin/books/new", label: "Thêm sách", icon: "post_add" },
 ] as const;
 
 const EXTRA_LINKS = [

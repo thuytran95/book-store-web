@@ -7,8 +7,15 @@ import { MaterialIcon } from "@/features/home/components/material-icon";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
 import { Skeleton } from "@/components/ui/skeleton";
-import { conditionBand, formatVnd } from "@/lib/format";
-import { toast } from "@/lib/toast";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatVnd } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AdminInventoryRow, ShelfStatus } from "../../inventory/types";
 
@@ -31,14 +38,18 @@ const SHELF: Record<ShelfStatus, { label: string; className: string }> = {
   },
 };
 
+const HEAD = "h-12 px-4 text-[14px] font-semibold text-on-primary";
+
+/** Icon-only button for table row actions: no background, the icon carries the colour. */
+const ICON_BUTTON =
+  "inline-flex size-8 items-center justify-center rounded-full transition-opacity outline-none hover:opacity-70 focus-visible:ring-3 focus-visible:ring-ring/50";
+
 export function InventoryTable({
   rows,
-  selectedIds,
-  onToggleRow,
-  onToggleAll,
   isLoading,
   error,
   onEdit,
+  onDelete,
 }: {
   rows: AdminInventoryRow[];
   selectedIds: Set<number>;
@@ -47,6 +58,7 @@ export function InventoryTable({
   isLoading?: boolean;
   error: unknown;
   onEdit: (id: number) => void;
+  onDelete: (row: AdminInventoryRow) => void;
 }) {
   if (isLoading) return <Skeleton className="h-96 rounded-lg" />;
   if (error) return <ErrorMessage error={error} />;
@@ -59,127 +71,102 @@ export function InventoryTable({
     );
   }
 
-  const pageIds = rows.map((r) => r.id);
-  const allSelected =
-    pageIds.length > 0 && pageIds.every((id) => selectedIds.has(id));
-
   return (
-    <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-[0_8px_24px_-4px_rgba(27,77,62,0.06)]">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left text-body-md">
-          <thead>
-            <tr className="bg-surface-container-low/70 text-label-sm uppercase tracking-wider text-on-surface-variant">
-              <th className="px-4 py-3.5 font-semibold">Mã sách</th>
-              <th className="min-w-[280px] px-4 py-3.5 font-semibold">Sách</th>
-              <th className="px-4 py-3.5 font-semibold">Thể loại</th>
-              <th className="min-w-[140px] px-4 py-3.5 text-right font-semibold">
-                Giá bán
-              </th>
-              <th className="px-4 py-3.5 text-center font-semibold">
-                Trạng thái
-              </th>
-              <th className="w-36 px-4 py-3.5 text-right font-semibold">
-                Thao tác
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="group transition-colors hover:bg-surface-container-low/40"
-              >
-                <td className="whitespace-nowrap px-4 py-3.5">
-                  <div className="flex items-center gap-1.5">
-                    <span className="rounded-full bg-surface-container px-2 py-0.5 text-label-md font-semibold text-primary">
-                      {row.stockCode}
-                    </span>
+    <div className="overflow-hidden rounded-serene">
+      <Table>
+        <TableHeader className="bg-primary">
+          <TableRow className="border-0 hover:bg-primary">
+            <TableHead className={HEAD}>Mã sách</TableHead>
+            <TableHead className={cn(HEAD, "min-w-70")}>Sách</TableHead>
+            <TableHead className={HEAD}>Thể loại</TableHead>
+            <TableHead className={cn(HEAD, "min-w-[140px] text-right")}>
+              Giá bán
+            </TableHead>
+            <TableHead className={cn(HEAD, "text-center")}>
+              Trạng thái
+            </TableHead>
+            <TableHead className="h-12 px-4" />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow
+              key={row.id}
+              className="border-outline-variant/30 hover:bg-surface-container-low"
+            >
+              <TableCell className="px-4 py-3 font-medium text-primary">
+                {row.stockCode}
+              </TableCell>
+              <TableCell className="px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-14 w-10 shrink-0 overflow-hidden rounded bg-surface-container">
+                    {row.coverUrl ? (
+                      <Image
+                        src={row.coverUrl}
+                        alt=""
+                        fill
+                        className="object-cover"
+                        sizes="40px"
+                      />
+                    ) : null}
                   </div>
-                </td>
-                <td className="px-4 py-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded bg-surface-container shadow-sm">
-                      {row.coverUrl ? (
-                        <Image
-                          src={row.coverUrl}
-                          alt=""
-                          fill
-                          className="object-cover transition-transform group-hover:scale-105"
-                          sizes="48px"
-                        />
-                      ) : null}
-                    </div>
-                    <div className="min-w-0">
-                      <Link
-                        href={`/admin/books/${row.id}`}
-                        className="block truncate text-headline-sm font-semibold text-on-surface transition-colors group-hover:text-primary"
-                      >
-                        {row.title}
-                      </Link>
-                    </div>
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-4 py-3.5">
-                  <span className="inline-flex rounded-full bg-tertiary-fixed/60 px-2.5 py-1 text-label-sm font-semibold text-tertiary">
-                    {row.categoryName}
-                  </span>
-                </td>
-
-                <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                  <div className="text-headline-sm font-bold text-primary">
-                    {formatVnd(row.salePrice)}
-                  </div>
-                </td>
-                <td className="whitespace-nowrap px-4 py-3.5 text-center">
-                  <span
+                  <Link
+                    href={`/admin/books/${row.id}`}
+                    className="min-w-0 truncate font-medium text-on-surface hover:text-primary"
+                  >
+                    {row.title}
+                  </Link>
+                </div>
+              </TableCell>
+              <TableCell className="px-4 py-3 text-on-surface-variant">
+                {row.categoryName}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-right tabular-nums font-medium text-on-surface">
+                {formatVnd(row.salePrice)}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-center">
+                <span
+                  className={cn(
+                    "inline-flex rounded-full px-2.5 py-1 text-xs",
+                    SHELF[row.shelfStatus].className,
+                  )}
+                >
+                  {SHELF[row.shelfStatus].label}
+                </span>
+              </TableCell>
+              <TableCell className="px-4 py-3">
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    type="button"
+                    aria-label={`Sửa sách ${row.title}`}
+                    title="Sửa"
+                    onClick={() => onEdit(row.id)}
+                    className={cn(ICON_BUTTON, "cursor-pointer text-primary")}
+                  >
+                    <MaterialIcon name="edit" filled className="text-[16px]" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Xoá sách ${row.title}`}
+                    title="Xoá"
+                    onClick={() => onDelete(row)}
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs",
-                      SHELF[row.shelfStatus].className,
+                      ICON_BUTTON,
+                      "cursor-pointer text-destructive",
                     )}
                   >
-                    {SHELF[row.shelfStatus].label}
-                  </span>
-                </td>
-                <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <IconBtn
-                      title="Chỉnh sửa"
-                      icon="edit"
-                      onClick={() => onEdit(row.id)}
+                    <MaterialIcon
+                      name="delete"
+                      filled
+                      className="text-[16px]"
                     />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
-  );
-}
-
-function IconBtn({
-  icon,
-  title,
-  onClick,
-  className,
-}: {
-  icon: string;
-  title: string;
-  onClick: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      title={title}
-      onClick={onClick}
-      className={cn(
-        "flex size-8 items-center justify-center rounded-full text-on-surface-variant transition-all hover:bg-surface-container hover:text-primary",
-        className,
-      )}
-    >
-      <MaterialIcon name={icon} className="text-[18px]" />
-    </button>
   );
 }

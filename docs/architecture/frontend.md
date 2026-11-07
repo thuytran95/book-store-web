@@ -2,7 +2,7 @@
 
 Next.js 15 (App Router, RSC) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui (style `base-nova`, on
 `@base-ui/react`) · TanStack Query v5 · react-hook-form + zod v4 · openapi-fetch + openapi-typescript ·
-sonner · npm. UI copy is Vietnamese (`lang="vi"`, font Noto Sans JP via `next/font`, exposed as `--font-sans`). Body text is 16px on every screen: `body`, `text-sm` and `text-body-md` are all 16px (set in `globals.css`); use `text-xs` / `text-body-sm` for small text.
+sonner · npm. UI copy is Vietnamese (`lang="vi"`, font Noto Sans JP via `next/font`, exposed as `--font-sans`). Body text is 14px on every screen: `body`, `text-sm`, `text-base`, `text-body-md`, `text-body-lg` and `text-headline-sm` are all 14px (set in `globals.css`); use `text-xs` / `text-body-sm` for small text.
 
 ## Layout (`frontend/src/`)
 
@@ -33,7 +33,7 @@ middleware.ts             route guard
 | Shop                   | `/`, `/books`, `/books/[slug]`                                                                                                                                                                                                                           | `home`, `catalog` (incl. `catalog/book-detail/`)             |
 | Auth                   | `/login`, `/register`                                                                                                                                                                                                                                    | `auth`                                                       |
 | Buyer (login required) | `/cart`, `/checkout` (shipping info typed in the form), `/orders`, `/orders/[id]`, `/account/profile`                                                                                                                                                 | `cart`, `orders`, `account`                                  |
-| Admin (admin role)     | `/admin` (inventory home), `/admin/books`, `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/authors` (search, create/edit dialog, delete with merge; book count links to `/admin?author_id=`), `/admin/orders`, `/admin/orders/[id]`, `/admin/users` | `admin` (components grouped by domain: `components/{inventory,book,category,author,order,user}/`) |
+| Admin (admin role)     | `/admin` (inventory home), `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/authors` (search, create/edit dialog, delete with merge; book count links to `/admin?author_id=`), `/admin/orders`, `/admin/orders/[id]`, `/admin/users` | `admin` (components grouped by domain: `components/{inventory,book,category,author,order,user}/`) |
 
 ## Data access
 
@@ -85,7 +85,7 @@ Every call goes through the typed clients in `lib/api/`, built from the generate
   `--accent-warm`, …) from the "serene botanical editorial" prototype (`docs/prototype/`).
 - Icons: `lucide-react`, or `MaterialIcon` (`features/home/components/material-icon.tsx`) for prototype screens.
 - `cn()` from `lib/utils.ts`. Add shadcn components with the shadcn CLI into `components/ui/`.
-- Links that look like buttons use `LinkButton` (`components/shared/link-button.tsx`): pill, 16px text,
+- Links that look like buttons use `LinkButton` (`components/shared/link-button.tsx`): pill, 14px text,
   `variant="filled" | "outline"`, `size="default" | "sm"`. Don't style `Link` by hand or use
   `<Button render={<Link />}>`; `Button` is for actions without navigation.
 - Shop is mobile-first; admin targets desktop.

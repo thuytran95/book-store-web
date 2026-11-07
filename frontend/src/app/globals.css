@@ -4,10 +4,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Body text is 16px on every screen: `text-sm` (used by most components) matches `text-base`. */
+/* Body text is 14px on every screen (admin and shop): `text-sm` and `text-base` are both 14px. */
 @theme {
-  --text-sm: 1rem;
-  --text-sm--line-height: 1.5rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.25rem;
 }
 
 @theme inline {
@@ -245,20 +247,20 @@
 }
 
 @utility text-headline-sm {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 600;
 }
 
 @utility text-body-lg {
-  font-size: 16px;
-  line-height: 26px;
+  font-size: 14px;
+  line-height: 22px;
   font-weight: 400;
 }
 
 @utility text-body-md {
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 14px;
+  line-height: 20px;
   font-weight: 400;
 }
 
@@ -327,7 +329,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
   }
   html {

@@ -1,12 +1,14 @@
 "use client";
 
 import { LinkButton } from "@/components/shared/link-button";
+import { TablePagination } from "@/components/shared/table-pagination";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { MaterialIcon } from "@/features/home/components/material-icon";
 import { errorMessage } from "@/lib/error-messages";
 import { formatCompactCount } from "@/lib/format";
+import { getPageInfo } from "@/lib/pagination";
 import { toast } from "@/lib/toast";
 import { useAdminInventoryFilters } from "../../hooks/use-admin-inventory-filters";
 import {
@@ -16,7 +18,10 @@ import {
   useDeleteBook,
   useInventoryOverview,
 } from "../../hooks/use-admin";
-import { toAdminInventoryRow } from "../../inventory/types";
+import {
+  type AdminInventoryRow,
+  toAdminInventoryRow,
+} from "../../inventory/types";
 import { InventoryBatchFooter } from "./inventory-batch-footer";
 import { InventoryKpiCard } from "./inventory-kpi-card";
 import { InventoryTable } from "./inventory-table";
@@ -28,6 +33,7 @@ export function InventoryHome() {
   const [searchInput, setSearchInput] = useState(filters.text ?? "");
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState<AdminInventoryRow | null>(null);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
 
   useEffect(() => {
@@ -52,10 +58,6 @@ export function InventoryHome() {
     [books.data?.items],
   );
 
-  const pageCount = books.data
-    ? Math.max(1, Math.ceil(books.data.total / books.data.size))
-    : 1;
-  const page = filters.page ?? 1;
   const total = books.data?.total ?? overview.data?.total_titles ?? 0;
 
   const toggleRow = (id: number) => {
@@ -91,6 +93,29 @@ export function InventoryHome() {
     setBatchDeleteOpen(false);
   };
 
+  const runDelete = async () => {
+    if (!deleting) return;
+    try {
+      const res = await remove.mutateAsync(deleting.id);
+      toast.success(
+        res.hidden
+          ? `Sách "${deleting.title}" đã có đơn hàng nên được ẩn thay vì xoá`
+          : `Đã xoá sách "${deleting.title}"`,
+      );
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(deleting.id);
+        return next;
+      });
+      // Deleting the only row of the last page: step back so the table isn't empty.
+      const page = filters.page ?? 1;
+      if (rows.length === 1 && page > 1) setFilter("page", String(page - 1));
+      setDeleting(null);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  };
+
   const ov = overview.data;
 
   return (
@@ -117,7 +142,7 @@ export function InventoryHome() {
           </div>
         </div>
         <LinkButton href="/admin/books/new" className="self-start lg:self-auto">
-          + Thêm sách mới vào kho
+          + Thêm sách
         </LinkButton>
       </div>
 
@@ -285,29 +310,45 @@ export function InventoryHome() {
         onViewModeChange={setViewMode}
       />
 
-      <div className="overflow-hidden rounded-lg bg-surface-container-lowest shadow-[0_8px_24px_-4px_rgba(27,77,62,0.06)]">
-        <InventoryTable
-          rows={rows}
-          selectedIds={selected}
-          onToggleRow={toggleRow}
-          onToggleAll={toggleAll}
-          isLoading={books.isLoading}
-          error={books.error}
-          onEdit={(id) => router.push(`/admin/books/${id}`)}
-        />
+      <section className="w-full overflow-hidden rounded-serene-lg bg-surface-container-lowest shadow-[0_8px_30px_-6px_rgba(27,77,62,0.06),0_2px_8px_-2px_rgba(0,0,0,0.04)]">
+        <div className="flex flex-col gap-4 p-space-xl">
+          <InventoryTable
+            rows={rows}
+            selectedIds={selected}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            isLoading={books.isLoading}
+            error={books.error}
+            onEdit={(id) => router.push(`/admin/books/${id}`)}
+            onDelete={setDeleting}
+          />
+        </div>
         <InventoryBatchFooter
           selectedCount={selected.size}
           onBatchDiscount={() =>
             toast("Cập nhật giảm giá hàng loạt — chưa hỗ trợ")
           }
           onBatchDelete={() => setBatchDeleteOpen(true)}
-          page={page}
-          pageCount={pageCount}
-          total={total}
-          pageSize={filters.size ?? 20}
-          onPageChange={(p) => setFilter("page", String(p))}
         />
-      </div>
+      </section>
+      <TablePagination
+        {...getPageInfo(filters.page ?? 1, filters.size ?? 20, total)}
+        setPage={(p) => setFilter("page", String(p))}
+        itemLabel="cuốn"
+      />
+
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleting(null);
+        }}
+        title="Xoá sách?"
+        message={`Xoá sách "${deleting?.title ?? ""}" khỏi kho. Sách đã có đơn hàng sẽ được ẩn thay vì xoá.`}
+        destructive
+        confirmLabel="Xoá"
+        loading={remove.isPending}
+        onConfirm={() => void runDelete()}
+      />
 
       <ConfirmDialog
         open={batchDeleteOpen}
@@ -319,7 +360,6 @@ export function InventoryHome() {
         loading={remove.isPending}
         onConfirm={() => void runBatchDelete()}
       />
-
     </div>
   );
 }

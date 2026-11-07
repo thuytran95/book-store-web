@@ -14,12 +14,12 @@ Hệ thống có 3 vai trò, phân biệt theo việc đã đăng nhập hay ch�
 
 ## 2. Phía người mua
 
-Người mua cần 4 nhóm chức năng: tài khoản, duyệt và tìm sách, giỏ hàng và mua sách, đặt sách.
+Người mua cần 3 nhóm chức năng: tài khoản, duyệt và tìm sách, giỏ hàng và đặt mua sách.
 
 **Tài khoản**
 
-- Đăng ký, đăng nhập, đăng xuất, quên mật khẩu
-- Cập nhật hồ sơ, địa chỉ nhận hàng
+- Đăng ký, đăng nhập, đăng xuất
+- Cập nhật hồ sơ (họ tên, số điện thoại)
 
 **Duyệt và tìm sách**
 
@@ -28,28 +28,23 @@ Người mua cần 4 nhóm chức năng: tài khoản, duyệt và tìm sách, g
 - Tìm kiếm theo tên sách, tác giả
 - Trang chi tiết: ảnh, giá, tình trạng, mô tả, số lượng còn
 
-**Giỏ hàng và mua sách**
+**Giỏ hàng, đặt mua và theo dõi đơn**
 
 - Thêm, sửa, xóa sản phẩm trong giỏ
-- Thanh toán (checkout): nhập địa chỉ, chọn phương thức (COD, chuyển khoản)
-- Xác nhận đơn hàng, xem lịch sử đơn
+- Thanh toán (checkout): nhập người nhận, số điện thoại, địa chỉ giao hàng (điền sẵn từ hồ sơ), chọn phương thức (COD, chuyển khoản)
+- Xác nhận đơn hàng, xem lịch sử và trạng thái đơn
 - Hủy đơn khi còn ở trạng thái "chờ xác nhận"
-
-**Đặt sách (pre-order / yêu cầu sách)**
-
-- Đặt giữ sách đang còn hàng (giữ trong X ngày)
-- Gửi yêu cầu tìm sách chưa có trong kho (tên sách, tác giả, ghi chú)
-- Xem trạng thái yêu cầu: chờ xử lý / đã có sách / từ chối
 
 ## 3. Phía admin
 
-Admin quản lý sách và danh mục, xử lý đơn và yêu cầu đặt sách, đồng thời xem thống kê cơ bản.
+Admin quản lý sách theo danh mục, theo dõi tồn kho và xử lý đơn hàng.
 
 **Quản lý sách**
 
 - Thêm, sửa, xóa (hoặc ẩn) sách
-- Thông tin: tên, tác giả, NXB, năm xuất bản, giá nhập, giá bán, tình trạng, mô tả, ảnh, số lượng
-- Bật/tắt hiển thị, đánh dấu "đã bán" hoặc "hết hàng"
+- Thông tin: tên, tác giả, NXB, năm xuất bản, giá bán, tình trạng, mô tả, ảnh, số lượng
+- Bật/tắt hiển thị; sửa số lượng tồn (đặt 0 khi sách đã bán hết)
+- Quản lý tác giả
 
 **Quản lý danh mục**
 
@@ -62,18 +57,13 @@ Admin quản lý sách và danh mục, xử lý đơn và yêu cầu đặt sác
 - Cập nhật trạng thái: chờ xác nhận → đã xác nhận → đang giao → hoàn thành / hủy
 - Tự động trừ tồn kho khi xác nhận đơn, hoàn lại khi hủy
 
-**Quản lý đặt sách**
-
-- Duyệt yêu cầu đặt, báo đã có sách hoặc từ chối
-- Giải phóng sách giữ chỗ khi quá hạn
-
 **Quản lý người dùng (tối thiểu)**
 
 - Xem danh sách, khóa/mở tài khoản
 
-**Thống kê cơ bản**
+**Theo dõi tồn kho**
 
-- Doanh thu theo ngày/tháng, số đơn, sách bán chạy, sách sắp hết
+- Tổng quan kho: số đầu sách, số bản, sách sắp hết / hết hàng, sách đang chờ xác nhận đơn
 
 ## 4. Yêu cầu hệ thống để chạy ổn định
 
@@ -89,18 +79,16 @@ Rủi ro lớn nhất là bán trùng, vì sách cũ thường chỉ có 1 bản
 
 ## 5. Thực thể dữ liệu chính
 
-Bản đầu cần 8 thực thể.
+Bản đầu cần 6 thực thể.
 
 | Thực thể | Vai trò trong hệ thống |
 | --- | --- |
 | User | Tài khoản người mua và admin |
-| Address | Địa chỉ nhận hàng của người dùng |
 | Book | Sách, giá, tình trạng, tồn kho |
+| Author | Tác giả của sách |
 | Category | Danh mục sách |
 | Cart / CartItem | Giỏ hàng và các dòng sản phẩm |
-| Order / OrderItem | Đơn hàng và các dòng sản phẩm |
-| Reservation | Đặt giữ sách đang còn hàng |
-| BookRequest | Yêu cầu tìm sách chưa có trong kho |
+| Order / OrderItem | Đơn hàng (kèm thông tin giao hàng) và các dòng sản phẩm |
 
 ## 6. Chưa cần ở bản đầu (**Không implememnt**)
 
@@ -112,3 +100,6 @@ Các tính năng sau để mở rộng ở giai đoạn sau:
 - Thông báo qua email/Zalo
 - Tích hợp vận chuyển (GHN/GHTK)
 - Nhập sách hàng loạt bằng Excel
+- Đặt giữ sách, yêu cầu tìm sách chưa có trong kho
+- Quên mật khẩu qua email, sổ địa chỉ nhận hàng
+- Báo cáo doanh thu / sách bán chạy, giá nhập
