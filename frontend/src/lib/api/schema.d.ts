@@ -476,6 +476,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Status Counts */
+        get: operations["status_counts_api_v1_admin_orders_counts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/orders/{order_id}": {
         parameters: {
             query?: never;
@@ -531,6 +548,36 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminOrderSummary */
+        AdminOrderSummary: {
+            /** Id */
+            id: number;
+            /** Code */
+            code: string;
+            status: components["schemas"]["OrderStatus"];
+            payment_method: components["schemas"]["PaymentMethod"];
+            /** Total */
+            total: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Ship Recipient */
+            ship_recipient: string;
+            /** Ship Phone */
+            ship_phone: string;
+            /**
+             * Copies
+             * @default 0
+             */
+            copies: number;
+            /**
+             * Has Shortage
+             * @default false
+             */
+            has_shortage: boolean;
+        };
         /** AuthorCreate */
         AuthorCreate: {
             /** Name */
@@ -919,6 +966,8 @@ export interface components {
             created_at: string;
             /** User Id */
             user_id: number;
+            /** User Email */
+            user_email?: string | null;
             /** Ship Recipient */
             ship_recipient: string;
             /** Ship Phone */
@@ -949,16 +998,68 @@ export interface components {
             book_id: number;
             /** Title */
             title: string;
+            /** Author */
+            author: string;
+            /** Condition Pct */
+            condition_pct: number;
             /** Price */
             price: number;
             /** Quantity */
             quantity: number;
+            /**
+             * Short
+             * @default false
+             */
+            short: boolean;
         };
+        /**
+         * OrderSort
+         * @enum {string}
+         */
+        OrderSort: "newest" | "oldest" | "total_desc";
         /**
          * OrderStatus
          * @enum {string}
          */
         OrderStatus: "pending" | "confirmed" | "shipping" | "completed" | "cancelled";
+        /** OrderStatusCounts */
+        OrderStatusCounts: {
+            /**
+             * All
+             * @default 0
+             */
+            all: number;
+            /**
+             * Pending
+             * @default 0
+             */
+            pending: number;
+            /**
+             * Confirmed
+             * @default 0
+             */
+            confirmed: number;
+            /**
+             * Shipping
+             * @default 0
+             */
+            shipping: number;
+            /**
+             * Completed
+             * @default 0
+             */
+            completed: number;
+            /**
+             * Cancelled
+             * @default 0
+             */
+            cancelled: number;
+            /**
+             * Stale Pending
+             * @default 0
+             */
+            stale_pending: number;
+        };
         /** OrderSummary */
         OrderSummary: {
             /** Id */
@@ -974,6 +1075,17 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /** Page[AdminOrderSummary] */
+        Page_AdminOrderSummary_: {
+            /** Items */
+            items: components["schemas"]["AdminOrderSummary"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Size */
+            size: number;
         };
         /** Page[AuthorRead] */
         Page_AuthorRead_: {
@@ -2454,7 +2566,10 @@ export interface operations {
         parameters: {
             query?: {
                 status?: components["schemas"]["OrderStatus"] | null;
+                q?: string | null;
+                /** @description Alias of `q` */
                 code?: string | null;
+                sort?: components["schemas"]["OrderSort"];
                 page?: number;
                 size?: number;
             };
@@ -2472,7 +2587,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_OrderSummary_"];
+                    "application/json": components["schemas"]["Page_AdminOrderSummary_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    status_counts_api_v1_admin_orders_counts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderStatusCounts"];
                 };
             };
             /** @description Validation Error */

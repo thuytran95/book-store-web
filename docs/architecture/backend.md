@@ -53,7 +53,7 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 | catalog | `categories`, `authors`, `book_authors`, `books`, `book_images` | `GET /categories`, `GET /books` (search/filter, paginated), `GET /books/{slug}` | `GET/POST/PATCH/DELETE /admin/books` (`?author_id=`, `?stock=in_stock|out_of_stock|hidden`, `?condition_max=` filters; `text` also matches stock code `MS-00012`; body `author_ids`; PATCH `quantity` goes through `Inventory.set_quantity`), `POST /admin/books/bulk` (`{ids, action: hide|show|delete}` → `{updated, deleted, hidden}`), `GET/POST/PATCH/DELETE /admin/categories`, `GET/POST/PATCH/DELETE /admin/authors` (`?q=`, paginated; delete takes `?merge_into=`) |
 | media | (uses `book_images`) | — | `POST/PUT /admin/books/{id}/images`, `DELETE /admin/books/{id}/images/{image_id}` |
 | cart | `carts`, `cart_items` | `GET /cart`, `PUT/DELETE /cart/items/{book_id}`, `DELETE /cart` | — |
-| orders | `orders`, `order_items`, `order_status_history` | `POST/GET /orders` (body carries `ship_recipient`, `ship_phone`, `ship_address`), `GET /orders/{id}`, `POST /orders/{id}/cancel` | `GET /admin/orders`, `GET /admin/orders/{id}`, `POST /admin/orders/{id}/transition` |
+| orders | `orders`, `order_items`, `order_status_history` | `POST/GET /orders` (body carries `ship_recipient`, `ship_phone`, `ship_address`), `GET /orders/{id}`, `POST /orders/{id}/cancel` | `GET /admin/orders` (`status`, `q` = code/recipient/phone, `code` alias of `q`, `sort` = `newest`/`oldest`/`total_desc`; returns `AdminOrderSummary` with `ship_recipient`, `ship_phone`, `copies`, `has_shortage`), `GET /admin/orders/counts` (global per-status counts + `stale_pending` = pending > 24 h), `GET /admin/orders/{id}` (adds `user_email`; items carry `author`, `condition_pct`, `short`), `POST /admin/orders/{id}/transition` |
 | reports | — (read-only queries) | — | `GET /admin/inventory/overview` (totals, intake this week, status counts `in_stock_titles`/`out_of_stock_titles`/`hidden_titles`, `pending_orders`) |
 | inventory | — (service only) | — | — |
 
@@ -61,14 +61,14 @@ request and rolls back if anything raises. Services raise `DomainError` subclass
 
 - **Inventory** (`modules/inventory/service.py`): the only code that reads or changes `books.quantity`.
   Available stock = `quantity` − items in pending orders.
-  `Inventory(session)` exposes `available`, `allocate` (row locks in id order, raises `OutOfStock`),
+  `Inventory(session)` exposes `available`, `shortages_for` (read-only: per order, books whose quantity no longer covers the line, i.e. what `commit` would reject), `allocate` (row locks in id order, raises `OutOfStock`),
   `commit`, `release`, `set_quantity` (raises `409 QUANTITY_BELOW_PENDING`, `details.pending`, when the new
   quantity is below copies held by pending orders). An allocation is not a table: it comes from the order items
   inserted in the same transaction.
 - **Order status** (`orders/state_machine.py`): `pending → confirmed → shipping → completed`, and
   `cancelled` from any non-final state. Buyers can only cancel `pending`; admins can make any legal move.
   Use `may_transition` / `allowed_targets`. Every change is written to `order_status_history`.
-- **Order items** store `price` (unit price at checkout) and `quantity`; the title is read from `books`
+- **Order items** store `price` (unit price at checkout) and `quantity`; the title, author and condition are read from `books`
   through `OrderItem.book` (books with orders cannot be deleted).
 - **Payment**: `cod` or `bank_transfer` (bank details from `BANK_TRANSFER_INFO`). No online payment.
 - **Search** (`catalog/search.py`): every word must appear (accent-insensitive `LIKE`) in

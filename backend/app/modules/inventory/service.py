@@ -68,6 +68,25 @@ class Inventory:
 
         return {book_id: max(0, qty) for book_id, qty in result.items()}
 
+    async def shortages_for(self, order_ids: Iterable[int]) -> dict[int, set[int]]:
+        """Per order, book ids whose `quantity < item.quantity` (read only, no locks).
+
+        Same check `commit` does, so it predicts the OUT_OF_STOCK a confirm would raise.
+        Orders without a shortage are left out of the result.
+        """
+        ids = sorted(set(order_ids))
+        if not ids:
+            return {}
+        rows = await self.session.execute(
+            select(OrderItem.order_id, OrderItem.book_id)
+            .join(Book, Book.id == OrderItem.book_id)
+            .where(OrderItem.order_id.in_(ids), Book.quantity < OrderItem.quantity)
+        )
+        result: dict[int, set[int]] = {}
+        for order_id, book_id in rows:
+            result.setdefault(order_id, set()).add(book_id)
+        return result
+
     # ---- writes ----
 
     async def _lock_books(self, ids: Iterable[int]) -> dict[int, Book]:

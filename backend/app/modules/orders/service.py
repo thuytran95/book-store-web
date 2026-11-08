@@ -1,7 +1,8 @@
+import re
 import secrets
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -25,14 +26,18 @@ from app.modules.orders.models import (
     OrderStatusHistory,
 )
 from app.modules.orders.schemas import (
+    AdminOrderSummary,
     OrderDetail,
     OrderFilter,
-    OrderSummary,
+    OrderSort,
+    OrderStatusCounts,
     PlaceOrderIn,
 )
 from app.modules.users.models import User, UserRole
 
 _CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+# A pending order older than this is "stale" (header badge "Chờ hơn 1 ngày").
+STALE_PENDING_HOURS = 24
 
 
 def generate_code() -> str:
@@ -148,22 +153,86 @@ async def get_order(session: AsyncSession, order_id: int, viewer: User) -> Order
     )
     if order is None or (viewer.role != UserRole.admin and order.user_id != viewer.id):
         raise NotFound("Order not found")
-    return _detail(order, viewer)
+    detail = _detail(order, viewer)
+    if viewer.role == UserRole.admin:
+        detail.user_email = await session.scalar(select(User.email).where(User.id == order.user_id))
+        if order.status == OrderStatus.pending:
+            short = (await Inventory(session).shortages_for([order.id])).get(order.id, set())
+            for item in detail.items:
+                item.short = item.book_id in short
+    return detail
+
+
+_SORTS = {
+    OrderSort.newest: (Order.created_at.desc(), Order.id.desc()),
+    OrderSort.oldest: (Order.created_at.asc(), Order.id.asc()),
+    OrderSort.total_desc: (Order.total.desc(), Order.id.desc()),
+}
+
+
+def _search_clause(term: str):
+    """Code, recipient (accent-insensitive) or, with >= 3 digits, phone."""
+    unaccent = func.immutable_unaccent
+    clauses = [
+        Order.code.icontains(term, autoescape=True),
+        unaccent(Order.ship_recipient).ilike(unaccent(f"%{_escape_like(term)}%"), escape="/"),
+    ]
+    digits = re.sub(r"\D", "", term)
+    if len(digits) >= 3:
+        clauses.append(
+            func.regexp_replace(Order.ship_phone, r"\D", "", "g").contains(digits)
+        )
+    return or_(*clauses)
+
+
+def _escape_like(term: str) -> str:
+    return term.replace("/", "//").replace("%", "/%").replace("_", "/_")
 
 
 async def list_orders(
     session: AsyncSession, flt: OrderFilter, params: PageParams
-) -> Page[OrderSummary]:
+) -> Page[AdminOrderSummary]:
     stmt = select(Order)
     if flt.status:
         stmt = stmt.where(Order.status == flt.status)
     if flt.user_id:
         stmt = stmt.where(Order.user_id == flt.user_id)
-    if flt.code:
-        stmt = stmt.where(Order.code.ilike(f"%{flt.code.strip()}%"))
+    if term := flt.search:
+        stmt = stmt.where(_search_clause(term))
     total = await session.scalar(select(func.count()).select_from(stmt.subquery()))
-    rows = await session.scalars(
-        stmt.order_by(Order.id.desc()).offset(params.offset).limit(params.size)
-    )
-    items = [OrderSummary.model_validate(o) for o in rows]
+    rows = list(await session.scalars(
+        stmt.options(selectinload(Order.items))
+        .order_by(*_SORTS[flt.sort]).offset(params.offset).limit(params.size)
+    ))
+    pending_ids = [o.id for o in rows if o.status == OrderStatus.pending]
+    shortages = await Inventory(session).shortages_for(pending_ids)
+    items = [
+        AdminOrderSummary(
+            id=o.id, code=o.code, status=o.status, payment_method=o.payment_method,
+            total=o.total, created_at=o.created_at,
+            ship_recipient=o.ship_recipient, ship_phone=o.ship_phone,
+            copies=sum(i.quantity for i in o.items),
+            has_shortage=o.id in shortages,
+        )
+        for o in rows
+    ]
     return Page.of(items, total or 0, params)
+
+
+async def status_counts(session: AsyncSession) -> OrderStatusCounts:
+    """Global counts per status (ignores list filters) + stale pending orders."""
+    counts = OrderStatusCounts()
+    for status, n in await session.execute(
+        select(Order.status, func.count()).group_by(Order.status)
+    ):
+        setattr(counts, status.value, int(n))
+        counts.all += int(n)
+    cutoff = func.now() - timedelta(hours=STALE_PENDING_HOURS)
+    counts.stale_pending = int(
+        await session.scalar(
+            select(func.count()).select_from(Order)
+            .where(Order.status == OrderStatus.pending, Order.created_at < cutoff)
+        )
+        or 0
+    )
+    return counts
