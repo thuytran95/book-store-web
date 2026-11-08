@@ -1,22 +1,41 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from app.core.deps import AdminUser, SessionDep, require_admin
 from app.core.pagination import Page, PageDep
 from app.modules.orders import service
 from app.modules.orders.models import OrderStatus
-from app.modules.orders.schemas import OrderDetail, OrderFilter, OrderSummary, TransitionIn
+from app.modules.orders.schemas import (
+    AdminOrderSummary,
+    OrderDetail,
+    OrderFilter,
+    OrderSort,
+    OrderStatusCounts,
+    TransitionIn,
+)
 
 router = APIRouter(
     prefix="/admin/orders", tags=["admin-orders"], dependencies=[Depends(require_admin)]
 )
 
 
-@router.get("", response_model=Page[OrderSummary])
+@router.get("", response_model=Page[AdminOrderSummary])
 async def list_orders(
-    session: SessionDep, params: PageDep,
-    status: OrderStatus | None = None, code: str | None = None,
+    session: SessionDep,
+    params: PageDep,
+    status: OrderStatus | None = None,
+    q: Annotated[str | None, Query(max_length=100)] = None,
+    code: Annotated[str | None, Query(max_length=100, description="Alias of `q`")] = None,
+    sort: OrderSort = OrderSort.newest,
 ):
-    return await service.list_orders(session, OrderFilter(status=status, code=code), params)
+    flt = OrderFilter(status=status, q=q, code=code, sort=sort)
+    return await service.list_orders(session, flt, params)
+
+
+@router.get("/counts", response_model=OrderStatusCounts)
+async def status_counts(session: SessionDep):
+    return await service.status_counts(session)
 
 
 @router.get("/{order_id}", response_model=OrderDetail)

@@ -70,6 +70,14 @@ class OrderItem(Base):
     def title(self) -> str:
         return self.book.title
 
+    @property
+    def author(self) -> str:
+        return self.book.author or ""
+
+    @property
+    def condition_pct(self) -> int:
+        return self.book.condition_pct
+
 
 class OrderStatusHistory(Base):
     __tablename__ = "order_status_history"

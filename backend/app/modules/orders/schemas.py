@@ -1,3 +1,4 @@
+import enum
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -11,8 +12,11 @@ class OrderItemRead(BaseModel):
 
     book_id: int
     title: str
+    author: str
+    condition_pct: int
     price: int
     quantity: int
+    short: bool = False
 
 
 class StatusHistoryRead(BaseModel):
@@ -35,8 +39,16 @@ class OrderSummary(BaseModel):
     created_at: datetime
 
 
+class AdminOrderSummary(OrderSummary):
+    ship_recipient: str
+    ship_phone: str
+    copies: int = 0
+    has_shortage: bool = False
+
+
 class OrderDetail(OrderSummary):
     user_id: int
+    user_email: str | None = None
     ship_recipient: str
     ship_phone: str
     ship_address: str
@@ -62,7 +74,30 @@ class TransitionIn(BaseModel):
     reason: str | None = Field(default=None, max_length=1000)
 
 
+class OrderSort(str, enum.Enum):
+    newest = "newest"
+    oldest = "oldest"
+    total_desc = "total_desc"
+
+
 class OrderFilter(BaseModel):
     status: OrderStatus | None = None
     user_id: int | None = None
-    code: str | None = None
+    q: str | None = Field(default=None, max_length=100)
+    code: str | None = None  # alias of `q`, kept for older callers
+    sort: OrderSort = OrderSort.newest
+
+    @property
+    def search(self) -> str | None:
+        term = (self.q or self.code or "").strip()
+        return term or None
+
+
+class OrderStatusCounts(BaseModel):
+    all: int = 0
+    pending: int = 0
+    confirmed: int = 0
+    shipping: int = 0
+    completed: int = 0
+    cancelled: int = 0
+    stale_pending: int = 0
