@@ -307,6 +307,15 @@
   max-width: var(--page-max);
 }
 
+/* Locked account row/card: faint diagonal hatch, reads as "closed" without red. */
+@utility locked-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(112 121 116 / 0.07) 0 6px,
+    transparent 6px 12px
+  );
+}
+
 @utility material-symbols-outlined {
   font-family: "Material Symbols Outlined";
   font-weight: normal;

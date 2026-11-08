@@ -1,6 +1,7 @@
 import enum
+from datetime import datetime
 
-from sqlalchemy import Boolean, Enum, String, text
+from sqlalchemy import Boolean, DateTime, Enum, String, text
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -24,4 +25,5 @@ class User(Base, TimestampMixin):
         Enum(UserRole, name="user_role"), default=UserRole.buyer, nullable=False
     )
     is_locked: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
+    locked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

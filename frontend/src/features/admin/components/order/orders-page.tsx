@@ -38,7 +38,8 @@ const TAB_EMPTY: Record<OrderStatus, { icon: string; title: string; body?: strin
 };
 
 export function OrdersPage() {
-  const { filters, openId, setFilter, setFilters, openOrder, closeOrder } = useAdminOrderFilters();
+  const { filters, openId, setFilter, setFilters, openOrder, closeOrder, clearUser } =
+    useAdminOrderFilters();
   const q = filters.q ?? "";
   const [searchInput, setSearchInput] = useState(q);
   const [cancelTarget, setCancelTarget] = useState<CancelTarget | null>(null);
@@ -163,6 +164,8 @@ export function OrdersPage() {
         onSortChange={(s) => setFilter("sort", s)}
         q={q}
         onClearQuery={() => setFilter("q", "")}
+        userId={filters.user_id}
+        onClearUser={clearUser}
       />
 
       <section aria-label="Danh sách đơn hàng" className="flex flex-col gap-space-md">

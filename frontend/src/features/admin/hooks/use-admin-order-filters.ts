@@ -42,6 +42,7 @@ export function useAdminOrderFilters() {
   const filters: AdminOrderFilters = useMemo(
     () => ({
       status: parseStatus(params.get("status")),
+      user_id: parsePositive(params.get("user")),
       q: params.get("q")?.trim() || undefined,
       sort: parseSort(params.get("sort")),
       page: parsePositive(params.get("page")) ?? 1,
@@ -89,6 +90,8 @@ export function useAdminOrderFilters() {
 
   const openOrder = useCallback((id: number) => setParams({ order: String(id) }), [setParams]);
   const closeOrder = useCallback(() => setParams({ order: null }), [setParams]);
+  /** Drop the buyer filter (`user`, set by the "N đơn" link on /admin/users). */
+  const clearUser = useCallback(() => setParams({ user: null, page: null }), [setParams]);
 
-  return { filters, openId, setFilter, setFilters, openOrder, closeOrder };
+  return { filters, openId, setFilter, setFilters, openOrder, closeOrder, clearUser };
 }

@@ -124,6 +124,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/users/counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** User Counts */
+        get: operations["user_counts_api_v1_admin_users_counts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users/{user_id}/lock": {
         parameters: {
             query?: never;
@@ -577,6 +594,43 @@ export interface components {
              * @default false
              */
             has_shortage: boolean;
+        };
+        /**
+         * AdminUserRead
+         * @description Admin list row: adds lock date and order counts.
+         */
+        AdminUserRead: {
+            /** Id */
+            id: number;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Full Name */
+            full_name: string;
+            /** Phone */
+            phone: string | null;
+            role: components["schemas"]["UserRole"];
+            /** Is Locked */
+            is_locked: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Locked At */
+            locked_at?: string | null;
+            /**
+             * Order Count
+             * @default 0
+             */
+            order_count: number;
+            /**
+             * Active Order Count
+             * @default 0
+             */
+            active_order_count: number;
         };
         /** AuthorCreate */
         AuthorCreate: {
@@ -1087,6 +1141,17 @@ export interface components {
             /** Size */
             size: number;
         };
+        /** Page[AdminUserRead] */
+        Page_AdminUserRead_: {
+            /** Items */
+            items: components["schemas"]["AdminUserRead"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Size */
+            size: number;
+        };
         /** Page[AuthorRead] */
         Page_AuthorRead_: {
             /** Items */
@@ -1124,17 +1189,6 @@ export interface components {
         Page_OrderSummary_: {
             /** Items */
             items: components["schemas"]["OrderSummary"][];
-            /** Total */
-            total: number;
-            /** Page */
-            page: number;
-            /** Size */
-            size: number;
-        };
-        /** Page[UserRead] */
-        Page_UserRead_: {
-            /** Items */
-            items: components["schemas"]["UserRead"][];
             /** Total */
             total: number;
             /** Page */
@@ -1197,6 +1251,29 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /** UserCounts */
+        UserCounts: {
+            /**
+             * All
+             * @default 0
+             */
+            all: number;
+            /**
+             * Active
+             * @default 0
+             */
+            active: number;
+            /**
+             * Locked
+             * @default 0
+             */
+            locked: number;
+            /**
+             * New This Week
+             * @default 0
+             */
+            new_this_week: number;
+        };
         /** UserRead */
         UserRead: {
             /** Id */
@@ -1224,6 +1301,11 @@ export interface components {
          * @enum {string}
          */
         UserRole: "buyer" | "admin";
+        /**
+         * UserStatusFilter
+         * @enum {string}
+         */
+        UserStatusFilter: "active" | "locked";
         /** UserUpdate */
         UserUpdate: {
             /** Full Name */
@@ -1471,6 +1553,7 @@ export interface operations {
         parameters: {
             query?: {
                 search?: string | null;
+                status?: components["schemas"]["UserStatusFilter"] | null;
                 page?: number;
                 size?: number;
             };
@@ -1488,7 +1571,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_UserRead_"];
+                    "application/json": components["schemas"]["Page_AdminUserRead_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    user_counts_api_v1_admin_users_counts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: {
+                access_token?: string | null;
+            };
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserCounts"];
                 };
             };
             /** @description Validation Error */
@@ -1521,7 +1635,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRead"];
+                    "application/json": components["schemas"]["AdminUserRead"];
                 };
             };
             /** @description Validation Error */
@@ -1554,7 +1668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserRead"];
+                    "application/json": components["schemas"]["AdminUserRead"];
                 };
             };
             /** @description Validation Error */
@@ -2570,6 +2684,7 @@ export interface operations {
                 /** @description Alias of `q` */
                 code?: string | null;
                 sort?: components["schemas"]["OrderSort"];
+                user_id?: number | null;
                 page?: number;
                 size?: number;
             };

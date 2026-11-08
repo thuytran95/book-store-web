@@ -28,8 +28,9 @@ async def list_orders(
     q: Annotated[str | None, Query(max_length=100)] = None,
     code: Annotated[str | None, Query(max_length=100, description="Alias of `q`")] = None,
     sort: OrderSort = OrderSort.newest,
+    user_id: Annotated[int | None, Query(ge=1)] = None,
 ):
-    flt = OrderFilter(status=status, q=q, code=code, sort=sort)
+    flt = OrderFilter(status=status, user_id=user_id, q=q, code=code, sort=sort)
     return await service.list_orders(session, flt, params)
 
 

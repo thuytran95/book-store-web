@@ -18,7 +18,12 @@ export function OrdersToolbar({
   onSortChange,
   q,
   onClearQuery,
+  userId,
+  onClearUser,
 }: {
+  /** Buyer filter from `/admin/users` ("N đơn" link), shown as a chip. */
+  userId?: number;
+  onClearUser?: () => void;
   /** Raw input value; the feature debounces it into `q`. */
   search: string;
   onSearchChange: (v: string) => void;
@@ -66,19 +71,34 @@ export function OrdersToolbar({
         </label>
       </div>
 
-      {q && (
+      {(q || userId) && (
         <div className="flex flex-wrap items-center gap-space-xs">
-          <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface-container pl-3 pr-1 text-label-md text-on-surface">
-            Từ khóa: {q}
-            <button
-              type="button"
-              aria-label="Bỏ từ khóa"
-              onClick={onClearQuery}
-              className="grid size-6 place-items-center rounded-full hover:bg-surface-container-high"
-            >
-              <MaterialIcon name="close" className="text-[16px]" />
-            </button>
-          </span>
+          {userId && (
+            <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface-container pl-3 pr-1 text-label-md text-on-surface">
+              Đơn của người mua #{userId}
+              <button
+                type="button"
+                aria-label="Bỏ lọc người mua"
+                onClick={onClearUser}
+                className="grid size-6 place-items-center rounded-full hover:bg-surface-container-high"
+              >
+                <MaterialIcon name="close" className="text-[16px]" />
+              </button>
+            </span>
+          )}
+          {q && (
+            <span className="inline-flex h-8 items-center gap-1 rounded-full bg-surface-container pl-3 pr-1 text-label-md text-on-surface">
+              Từ khóa: {q}
+              <button
+                type="button"
+                aria-label="Bỏ từ khóa"
+                onClick={onClearQuery}
+                className="grid size-6 place-items-center rounded-full hover:bg-surface-container-high"
+              >
+                <MaterialIcon name="close" className="text-[16px]" />
+              </button>
+            </span>
+          )}
         </div>
       )}
     </section>

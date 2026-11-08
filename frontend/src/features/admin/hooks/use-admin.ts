@@ -381,6 +381,7 @@ export type OrderSort = S["OrderSort"];
 
 export type AdminOrderFilters = {
   status?: OrderStatus;
+  user_id?: number;
   q?: string;
   sort?: OrderSort;
   page?: number;
@@ -396,6 +397,7 @@ export function useAdminOrders(filters: AdminOrderFilters = {}) {
         params: {
           query: {
             status: filters.status ?? null,
+            user_id: filters.user_id ?? null,
             q: filters.q || null,
             sort: filters.sort,
             page: filters.page,
@@ -466,23 +468,57 @@ export function useTransitionOrder() {
 
 // ---------------------------------------------------------------- Users
 
-export function useAdminUsers(search: string, page = 1) {
+export type AdminUserRead = S["AdminUserRead"];
+export type UserCounts = S["UserCounts"];
+export type UserStatusFilter = S["UserStatusFilter"];
+type AdminUserPage = S["Page_AdminUserRead_"];
+
+export type AdminUserFilters = {
+  status?: UserStatusFilter;
+  q?: string;
+  page: number;
+  size: number;
+};
+
+export function useAdminUsers(filters: AdminUserFilters) {
   return useQuery({
-    queryKey: ["admin", "users", search, page],
+    queryKey: ["admin", "users", filters],
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.GET("/api/v1/admin/users", {
-        params: { query: { search: search || null, page } },
+        params: {
+          query: {
+            search: filters.q || null,
+            status: filters.status ?? null,
+            page: filters.page,
+            size: filters.size,
+          },
+        },
       });
       return data!;
     },
   });
 }
 
-/** Errors: CANNOT_LOCK_SELF. */
+/** Global counts (ignore search/status): all, active, locked, new_this_week. */
+export function useAdminUserCounts() {
+  return useQuery({
+    queryKey: ["admin", "users", "counts"],
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/users/counts");
+      return data!;
+    },
+  });
+}
+
+/**
+ * Lock / unlock. Patches the row in cached list pages, then refetches list + counts.
+ * Errors: CANNOT_LOCK_SELF, CANNOT_LOCK_ADMIN, NOT_FOUND (toast, list refetched).
+ * `savingId` = id of the user being saved, for a per-row spinner.
+ */
 export function useSetUserLocked() {
   const qc = useQueryClient();
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ id, locked }: { id: number; locked: boolean }) => {
       const path = { user_id: id };
       const { data } = locked
@@ -490,6 +526,15 @@ export function useSetUserLocked() {
         : await api.POST("/api/v1/admin/users/{user_id}/unlock", { params: { path } });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin"),
+    onSuccess: (user) => {
+      qc.setQueriesData<AdminUserPage>({ queryKey: ["admin", "users"] }, (page) =>
+        page && "items" in page
+          ? { ...page, items: page.items.map((u) => (u.id === user.id ? user : u)) }
+          : page,
+      );
+    },
+    onError: (error) => toast.error(errorMessage(error)),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["admin", "users"] }),
   });
+  return { ...mutation, savingId: mutation.isPending ? mutation.variables?.id : undefined };
 }
