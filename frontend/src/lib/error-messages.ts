@@ -30,9 +30,16 @@ export const ERROR_MESSAGES: Record<string, string> = {
   HTTP_429: "Thao tác quá nhanh, vui lòng thử lại sau.",
 };
 
+/** Admin order status changes: same codes, wording for the admin orders page. */
+export const ADMIN_ORDER_TRANSITION_MESSAGES: Record<string, string> = {
+  OUT_OF_STOCK: "Không xác nhận được: sách trong đơn đã hết bản trong kho.",
+  INVALID_TRANSITION: "Đơn đã được người khác cập nhật, danh sách vừa được tải lại.",
+};
+
 const FALLBACK = "Đã có lỗi xảy ra. Vui lòng thử lại.";
 
-export function errorMessage(error: unknown): string {
-  if (isApiError(error)) return ERROR_MESSAGES[error.code] ?? FALLBACK;
+/** `overrides` lets one screen reword a code without changing it everywhere. */
+export function errorMessage(error: unknown, overrides?: Record<string, string>): string {
+  if (isApiError(error)) return overrides?.[error.code] ?? ERROR_MESSAGES[error.code] ?? FALLBACK;
   return FALLBACK;
 }

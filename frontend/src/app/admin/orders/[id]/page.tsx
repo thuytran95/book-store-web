@@ -1,7 +1,11 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { AdminOrderDetail } from "@/features/admin/components/order/order-detail";
-
-export default function AdminOrderDetailPage() {
-  return <AdminOrderDetail />;
+/** Old detail links open the drawer on the list page. */
+export default async function AdminOrderDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  redirect(`/admin/orders?order=${encodeURIComponent(id)}`);
 }

@@ -4,7 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
-import { errorMessage } from "@/lib/error-messages";
+import { ADMIN_ORDER_TRANSITION_MESSAGES, errorMessage } from "@/lib/error-messages";
 import { toast } from "@/lib/toast";
 
 type S = components["schemas"];
@@ -373,36 +373,74 @@ export function useDeleteAuthor() {
 
 // ---------------------------------------------------------------- Orders
 
-export function useAdminOrders(status: OrderStatus | undefined, page = 1, code?: string) {
+export type AdminOrderSummary = S["AdminOrderSummary"];
+export type OrderDetail = S["OrderDetail"];
+export type OrderItemRead = S["OrderItemRead"];
+export type OrderStatusCounts = S["OrderStatusCounts"];
+export type OrderSort = S["OrderSort"];
+
+export type AdminOrderFilters = {
+  status?: OrderStatus;
+  q?: string;
+  sort?: OrderSort;
+  page?: number;
+  size?: number;
+};
+
+export function useAdminOrders(filters: AdminOrderFilters = {}) {
   return useQuery({
-    queryKey: ["admin", "orders", status ?? "all", page, code ?? ""],
+    queryKey: ["admin", "orders", filters],
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const { data } = await api.GET("/api/v1/admin/orders", {
-        params: { query: { status: status ?? null, code: code || null, page } },
+        params: {
+          query: {
+            status: filters.status ?? null,
+            q: filters.q || null,
+            sort: filters.sort,
+            page: filters.page,
+            size: filters.size,
+          },
+        },
       });
       return data!;
     },
   });
 }
 
-export function useAdminOrder(id: number) {
+/** Global per-status counts (ignores search) + `stale_pending` (pending > 24 h). */
+export function useAdminOrderCounts() {
+  return useQuery({
+    queryKey: ["admin", "orders", "counts"],
+    queryFn: async () => {
+      const { data } = await api.GET("/api/v1/admin/orders/counts");
+      return data!;
+    },
+  });
+}
+
+/** Disabled while `id` is empty so the drawer can mount closed. */
+export function useAdminOrder(id: number | null | undefined) {
   return useQuery({
     queryKey: ["admin", "order", id],
-    enabled: Number.isFinite(id),
+    enabled: !!id,
     queryFn: async () => {
       const { data } = await api.GET("/api/v1/admin/orders/{order_id}", {
-        params: { path: { order_id: id } },
+        params: { path: { order_id: id! } },
       });
       return data!;
     },
   });
 }
 
-/** Errors: INVALID_TRANSITION, OUT_OF_STOCK. Only offer `allowed_transitions` from the order. */
+/**
+ * Only offer `allowed_transitions` from the order. Errors (`OUT_OF_STOCK` on a race,
+ * `INVALID_TRANSITION` when someone else moved it) are toasted here; the refetch on settle
+ * then disables / updates the buttons. `pendingId` = order currently being moved.
+ */
 export function useTransitionOrder() {
   const qc = useQueryClient();
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async ({ id, to, reason }: { id: number; to: OrderStatus; reason?: string }) => {
       const { data } = await api.POST("/api/v1/admin/orders/{order_id}/transition", {
         params: { path: { order_id: id } },
@@ -410,8 +448,20 @@ export function useTransitionOrder() {
       });
       return data!;
     },
-    onSettled: () => invalidate(qc, "admin", "order", "orders", "book", "books"),
+    onSuccess: (data, { id }) => qc.setQueryData(["admin", "order", id], data),
+    onError: (e) => toast.error(errorMessage(e, ADMIN_ORDER_TRANSITION_MESSAGES)),
+    onSettled: () =>
+      Promise.all([
+        // list + counts
+        qc.invalidateQueries({ queryKey: ["admin", "orders"] }),
+        qc.invalidateQueries({ queryKey: ["admin", "order"] }),
+        qc.invalidateQueries({ queryKey: ["admin", "books"] }),
+        qc.invalidateQueries({ queryKey: ["admin", "book"] }),
+        // sidebar pending badge, stock numbers
+        qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
+      ]),
   });
+  return { ...mutation, pendingId: mutation.isPending ? mutation.variables?.id : undefined };
 }
 
 // ---------------------------------------------------------------- Users
