@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { PriceTag } from "@/components/shared/badges";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorMessage } from "@/components/ui/error-message";
@@ -12,24 +12,42 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { LinkButton } from "@/components/shared/link-button";
+import { MaterialIcon } from "@/features/home/components/material-icon";
 import { usePlaceOrder } from "@/features/orders/hooks";
 import { ApiError, hasCode } from "@/lib/api/errors";
 import { applyServerErrors } from "@/lib/forms";
-import { formatVnd } from "@/lib/format";
 import { useSession } from "@/lib/session";
 import { toast } from "@/lib/toast";
-import { checkoutSchema, type CheckoutForm } from "@/lib/validation/checkout";
 import { cn } from "@/lib/utils";
+import { checkoutSchema, type CheckoutForm } from "@/lib/validation/checkout";
 import { useCart } from "../hooks/use-cart";
-import { LinkButton } from "@/components/shared/link-button";
+import { CheckoutStep } from "./checkout-steps";
+import { CheckoutMobileBar, CheckoutSummary } from "./checkout-summary";
 
-const BANK_INFO = process.env.NEXT_PUBLIC_BANK_TRANSFER_INFO ?? "Vui lòng liên hệ cửa hàng để nhận thông tin chuyển khoản.";
-const SHIPPING_FEE = 0; // open question: flat / threshold / admin-entered. Server sets the real fee.
+const BANK_INFO =
+  process.env.NEXT_PUBLIC_BANK_TRANSFER_INFO ??
+  "Vui lòng liên hệ cửa hàng để nhận thông tin chuyển khoản.";
+
+const PAYMENT_OPTIONS = [
+  {
+    value: "cod",
+    icon: "payments",
+    title: "Trả tiền khi nhận hàng",
+    body: "Thanh toán tiền mặt cho người giao khi sách tới tay bạn.",
+  },
+  {
+    value: "bank_transfer",
+    icon: "account_balance",
+    title: "Chuyển khoản ngân hàng",
+    body: "Chuyển trước, cửa hàng xác nhận đã nhận tiền rồi giao sách.",
+  },
+] as const;
 
 export function CheckoutView() {
   const router = useRouter();
   const { session } = useSession();
-  const { items, total, isLoading: cartLoading, remove } = useCart();
+  const { items, total, count, isLoading: cartLoading, remove } = useCart();
   const place = usePlaceOrder();
 
   const {
@@ -64,15 +82,28 @@ export function CheckoutView() {
     });
   }, [user, reset, getValues]);
 
-  if (cartLoading) return <Skeleton className="h-64" />;
+  if (cartLoading) {
+    return (
+      <div className="grid gap-8 md:grid-cols-[1fr_23rem]">
+        <Skeleton className="h-96 rounded-serene-md" />
+        <Skeleton className="h-96 rounded-serene-md" />
+      </div>
+    );
+  }
   if (items.length === 0) {
     return (
       <EmptyState
-        title="Giỏ hàng trống"
+        title="Giỏ hàng đang trống"
+        description="Chọn vài cuốn sách rồi quay lại đây để đặt hàng."
         action={<LinkButton href="/books">Xem sách</LinkButton>}
       />
     );
   }
+
+  // Stock can change between the cart page and here; stop early instead of failing on submit.
+  const blocked = items.some(
+    (i) => !i.book.is_visible || i.available <= 0 || i.quantity > i.available,
+  );
 
   const err = place.error;
   const outOfStockBookId =
@@ -94,109 +125,204 @@ export function CheckoutView() {
     ),
   );
 
+  let alert: React.ReactNode = null;
+  if (err) {
+    alert = (
+      <>
+        <ErrorMessage error={err} />
+        {culprit && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              remove(culprit.book.id);
+              place.reset();
+            }}
+          >
+            Xoá &quot;{culprit.book.title}&quot; khỏi giỏ
+          </Button>
+        )}
+      </>
+    );
+  } else if (blocked) {
+    alert = (
+      <p role="alert" className="text-sm text-destructive">
+        Có sách trong giỏ đã hết hoặc không đủ số lượng.{" "}
+        <Link
+          href="/cart"
+          className="font-semibold underline underline-offset-2"
+        >
+          Sửa giỏ hàng
+        </Link>
+      </p>
+    );
+  }
+
   return (
-    <form noValidate onSubmit={submit} className="grid gap-6 md:grid-cols-[1fr_22rem]">
-      <div className="grid content-start gap-6">
-        <section aria-labelledby="co-addr" className="grid gap-3">
-          <h2 id="co-addr" className="font-semibold">Thông tin giao hàng</h2>
-          <FormField label="Người nhận" required error={errors.ship_recipient?.message}>
-            <Input autoComplete="name" {...register("ship_recipient")} />
-          </FormField>
-          <FormField label="Số điện thoại" required error={errors.ship_phone?.message}>
-            <Input type="tel" autoComplete="tel" {...register("ship_phone")} />
-          </FormField>
+    <form
+      noValidate
+      onSubmit={submit}
+      className="grid items-start gap-10 pb-24 md:grid-cols-[1fr_23rem] md:pb-0 lg:grid-cols-[1fr_25rem] lg:gap-16"
+    >
+      <div className="max-w-2xl">
+        <CheckoutStep
+          n={1}
+          title="Thông tin giao hàng"
+          description="Người nhận và địa chỉ để giao sách."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              label="Người nhận"
+              required
+              error={errors.ship_recipient?.message}
+            >
+              <Input autoComplete="name" {...register("ship_recipient")} />
+            </FormField>
+            <FormField
+              label="Số điện thoại"
+              required
+              error={errors.ship_phone?.message}
+            >
+              <Input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                {...register("ship_phone")}
+              />
+            </FormField>
+          </div>
           <FormField
             label="Địa chỉ"
             required
             hint="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
             error={errors.ship_address?.message}
           >
-            <Textarea autoComplete="street-address" maxLength={500} {...register("ship_address")} />
+            <Textarea
+              rows={3}
+              autoComplete="street-address"
+              maxLength={500}
+              className="min-h-24 px-4 py-3"
+              {...register("ship_address")}
+            />
           </FormField>
-        </section>
+        </CheckoutStep>
 
-        <section aria-labelledby="co-pay" className="grid gap-2">
-          <h2 id="co-pay" className="font-semibold">Phương thức thanh toán</h2>
-          <div role="radiogroup" className="grid gap-2">
-            {(
-              [
-                ["cod", "Thanh toán khi nhận hàng (COD)"],
-                ["bank_transfer", "Chuyển khoản ngân hàng"],
-              ] as const
-            ).map(([value, label]) => (
-              <label
-                key={value}
-                className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm",
-                  payment === value && "border-primary bg-primary/5",
-                )}
-              >
-                <input
-                  type="radio"
-                  value={value}
-                  className="accent-primary"
-                  {...register("payment_method")}
-                />
-                {label}
-              </label>
-            ))}
+        <CheckoutStep n={2} title="Phương thức thanh toán">
+          <div
+            role="radiogroup"
+            aria-label="Phương thức thanh toán"
+            className="grid gap-3 sm:grid-cols-2"
+          >
+            {PAYMENT_OPTIONS.map((opt) => {
+              const selected = payment === opt.value;
+              return (
+                <label
+                  key={opt.value}
+                  className={cn(
+                    "relative flex cursor-pointer flex-col gap-3 rounded-serene border p-4 transition-colors",
+                    "has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50",
+                    selected
+                      ? "border-primary bg-pod-mint"
+                      : "border-outline-variant/70 hover:border-outline",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    value={opt.value}
+                    className="sr-only"
+                    {...register("payment_method")}
+                  />
+                  <span className="flex items-center justify-between">
+                    <MaterialIcon
+                      name={opt.icon}
+                      filled={selected}
+                      className={cn(
+                        "text-[28px]",
+                        selected ? "text-primary" : "text-outline",
+                      )}
+                    />
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "grid size-5 place-items-center rounded-full border-2",
+                        selected ? "border-primary" : "border-outline-variant",
+                      )}
+                    >
+                      {selected && (
+                        <span className="size-2.5 rounded-full bg-primary" />
+                      )}
+                    </span>
+                  </span>
+                  <span className="grid gap-0.5">
+                    <span className="font-semibold text-on-surface">
+                      {opt.title}
+                    </span>
+                    <span className="text-body-sm text-on-surface-variant">
+                      {opt.body}
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
           </div>
-          {payment === "bank_transfer" && (
-            <p className="rounded-lg bg-muted p-3 text-sm">
-              <strong>Thông tin chuyển khoản:</strong> {BANK_INFO}
-              <br />
-              <span className="text-muted-foreground">Quản trị viên sẽ xác nhận sau khi nhận được tiền.</span>
-            </p>
-          )}
-        </section>
 
-        <FormField label="Ghi chú" hint="Tuỳ chọn" error={errors.note?.message}>
-          <Textarea maxLength={500} {...register("note")} />
-        </FormField>
+          {payment === "bank_transfer" && (
+            <div className="flex gap-3 rounded-serene bg-pod-honey p-4 text-sm motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-top-2">
+              <MaterialIcon
+                name="account_balance"
+                className="text-xl text-tertiary"
+              />
+              <div className="grid gap-1">
+                <p className="font-semibold text-tertiary">
+                  Thông tin chuyển khoản
+                </p>
+                <p className="whitespace-pre-line text-on-surface">
+                  {BANK_INFO}
+                </p>
+                <p className="text-body-sm text-on-surface-variant">
+                  Cửa hàng xác nhận đơn sau khi nhận được tiền.
+                </p>
+              </div>
+            </div>
+          )}
+        </CheckoutStep>
+
+        <CheckoutStep
+          n={3}
+          title="Nội dung ghi chú"
+          description="Ghi chú cho cửa hàng."
+          last
+        >
+          <FormField
+            label="Ghi chú"
+            hint="Ví dụ: giờ nhận hàng thuận tiện, gọi trước khi giao."
+            error={errors.note?.message}
+          >
+            <Textarea
+              rows={3}
+              maxLength={500}
+              className="min-h-24 px-4 py-3"
+              {...register("note")}
+            />
+          </FormField>
+        </CheckoutStep>
       </div>
 
-      <aside className="sticky bottom-16 h-fit rounded-xl border bg-background p-4 md:top-24 md:bottom-auto">
-        <h2 className="mb-2 font-semibold">Đơn hàng</h2>
-        <ul className="grid gap-1 text-sm">
-          {items.map((i) => (
-            <li
-              key={i.book.id}
-              className={cn("flex justify-between gap-2", i.book.id === outOfStockBookId && "text-destructive")}
-            >
-              <span className="line-clamp-1">{i.quantity} × {i.book.title}</span>
-              <span className="tabular-nums">{formatVnd(i.line_total)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-3 flex justify-between text-sm">
-          <span>Phí vận chuyển</span>
-          <span>{SHIPPING_FEE === 0 ? "Sẽ xác nhận sau" : formatVnd(SHIPPING_FEE)}</span>
-        </div>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="font-medium">Tạm tính</span>
-          <PriceTag amount={total + SHIPPING_FEE} size="lg" />
-        </div>
-
-        {err && (
-          <div className="mt-3 grid gap-2">
-            <ErrorMessage error={err} />
-            {culprit && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => { remove(culprit.book.id); place.reset(); }}
-              >
-                Xoá &quot;{culprit.book.title}&quot; khỏi giỏ
-              </Button>
-            )}
-          </div>
-        )}
-
-        <Button type="submit" className="mt-4 w-full" size="lg" disabled={place.isPending}>
-          Đặt hàng
-        </Button>
-      </aside>
+      <CheckoutSummary
+        items={items}
+        total={total}
+        count={count}
+        flaggedBookId={outOfStockBookId}
+        alert={alert}
+        pending={place.isPending}
+        disabled={blocked}
+      />
+      <CheckoutMobileBar
+        total={total}
+        pending={place.isPending}
+        disabled={blocked}
+      />
     </form>
   );
 }

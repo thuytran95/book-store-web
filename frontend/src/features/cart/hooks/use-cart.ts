@@ -116,16 +116,22 @@ export function useAddToCart() {
   const { session } = useSession();
 
   return useMutation({
+    // Run add-to-cart calls one after another (across every button on the page), so each
+    // read-then-PUT sees the result of the previous one instead of the same stale quantity.
+    scope: { id: "cart-add" },
     mutationFn: async ({ bookId, quantity = 1 }: { bookId: number; quantity?: number }) => {
-      const current = await qc.ensureQueryData<Cart>({
-        queryKey: CART_KEY,
-        queryFn: async () => (await api.GET("/api/v1/cart")).data ?? EMPTY,
-      });
+      // The PUT sets an absolute quantity, so read the current cart from the server,
+      // not from the (possibly stale) query cache.
+      await qc.cancelQueries({ queryKey: CART_KEY });
+      const { data: current } = await api.GET("/api/v1/cart");
       const existing = current?.items.find((i) => i.book.id === bookId)?.quantity ?? 0;
-      await api.PUT("/api/v1/cart/items/{book_id}", {
+      const { data } = await api.PUT("/api/v1/cart/items/{book_id}", {
         params: { path: { book_id: bookId } },
         body: { quantity: existing + quantity },
       });
+      // Update the header badge right away from the server response.
+      if (data) qc.setQueryData<Cart>(CART_KEY, data);
+      return data;
     },
     onMutate: () => {
       if (!session) {
@@ -140,7 +146,7 @@ export function useAddToCart() {
     onError: (e) => {
       const msg = stockMessage(e);
       if (msg) toast.error(msg);
+      qc.invalidateQueries({ queryKey: CART_KEY });
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: CART_KEY }),
   });
 }
