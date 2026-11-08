@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { OrdersTable } from "@/features/admin/components/order/orders-table";
+import { Suspense } from "react";
+import { OrdersPage } from "@/features/admin/components/order/orders-page";
 
 export const metadata: Metadata = { title: "Đơn hàng" };
 
 export default function AdminOrdersPage() {
-  return <OrdersTable />;
+  return (
+    <Suspense>
+      <OrdersPage />
+    </Suspense>
+  );
 }

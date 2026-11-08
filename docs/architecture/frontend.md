@@ -33,7 +33,7 @@ middleware.ts             route guard
 | Shop                   | `/`, `/books`, `/books/[slug]`                                                                                                                                                                                                                           | `home`, `catalog` (incl. `catalog/book-detail/`)             |
 | Auth                   | `/login`, `/register`                                                                                                                                                                                                                                    | `auth`                                                       |
 | Buyer (login required) | `/cart`, `/checkout` (shipping info typed in the form), `/orders`, `/orders/[id]`, `/account/profile`                                                                                                                                                 | `cart`, `orders`, `account`                                  |
-| Admin (admin role)     | `/admin` (inventory home "Kho sách": status tabs from the overview, filters + chips, desktop table / mobile cards with inline stock stepper and visibility switch, bulk hide/show/delete), `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/authors` (search, create/edit dialog, delete with merge; book count links to `/admin?author_id=`), `/admin/orders`, `/admin/orders/[id]`, `/admin/users` | `admin` (components grouped by domain: `components/{inventory,book,category,author,order,user}/`) |
+| Admin (admin role)     | `/admin` (inventory home "Kho sách": status tabs from the overview, filters + chips, desktop table / mobile cards with inline stock stepper and visibility switch, bulk hide/show/delete), `/admin/books/new`, `/admin/books/[id]`, `/admin/categories` (create/rename in a dialog), `/admin/authors` (search, create/edit dialog, delete with merge; book count links to `/admin?author_id=`), `/admin/orders` ("Đơn hàng": status pipeline from `/admin/orders/counts`, search + sort, table / mobile cards with one-click next step, detail drawer `?order={id}`, cancel dialog with reasons), `/admin/orders/[id]` (redirects to `/admin/orders?order={id}`), `/admin/users` | `admin` (components grouped by domain: `components/{inventory,book,category,author,order,user}/`) |
 
 ## Data access
 
@@ -60,12 +60,22 @@ Every call goes through the typed clients in `lib/api/`, built from the generate
 - Session: `useSession()` (`lib/session.ts`, client) and `lib/session-server.ts` (server).
 - URL state: catalog filters via `lib/book-query.ts` (`BookQuery` ↔ search params, page size 24);
   admin inventory filters via `features/admin/hooks/use-admin-inventory-filters.ts` (params `q`, `cat`, `cond`
-  [`mint|good|fair|old`, legacy `vintage` = `old`], `author_id`, `sort`, `page`, `status` [`in_stock|out_of_stock|hidden`]).
+  [`mint|good|fair|old`, legacy `vintage` = `old`], `author_id`, `sort`, `page`, `status` [`in_stock|out_of_stock|hidden`]);
+  admin order filters via `features/admin/hooks/use-admin-order-filters.ts` (`status`, `q`, `sort` [omitted when
+  `newest`], `page`, `order` = id of the order open in the drawer; `setFilter` / `setFilters` reset `page`).
 - Admin inventory home (`features/admin/components/inventory/`): `inventory-home` composes `inventory-header`,
   `inventory-status-strip`, `inventory-toolbar`, `inventory-table` (≥ md) / `inventory-card-list` (< md),
   `inventory-bulk-bar`; per-row controls in `inventory-row-controls` (`StockStepper` saves through
   `useQuantityDraft` → `useSetBookQuantity`, debounced 500 ms, optimistic with rollback; `VisibilitySwitch` →
   `useToggleVisible`, optimistic) and cover/author cells in `inventory-book-cover`. Bulk actions use `useBulkBooks`.
+- Admin orders (`features/admin/components/order/`): `orders-page` composes `orders-header`, `orders-status-pipeline`,
+  `orders-toolbar`, `orders-table` (≥ md) / `orders-card-list` (< md), `order-detail-drawer` (Sheet, with
+  `order-progress` timeline) and `order-cancel-dialog`. Shared: `order-meta.ts` (`ORDER_FLOW`, `ORDER_STATUS_UI`,
+  `NEXT_STEP`, `CANCEL_PRESETS`), `order-status-chip`, `order-row-actions` (`OrderNextStepButton`, disabled while
+  `has_shortage` / `item.short`; `OrderRowMenu`). Hooks: `useAdminOrders(filters)`, `useAdminOrderCounts()`,
+  `useAdminOrder(id)`, `useTransitionOrder()` (puts the result in `["admin","order",id]`, invalidates orders,
+  counts, books and the inventory overview; toasts errors with `ADMIN_ORDER_TRANSITION_MESSAGES`; `pendingId`).
+  The admin sidebar shows `overview.pending_orders` as a badge on "Đơn hàng".
 - Pagination: math in `lib/pagination.ts` (`getPageInfo`, `getPageWindow`); state via `usePagination({ total, pageSize })`
   or `useClientPagination(items, pageSize)` (returns `pageItems`) from `lib/use-pagination.ts`. UI: `TablePagination`
   (footer bar with range text) and `Pager` (round buttons) from `components/shared/table-pagination.tsx`.
@@ -75,8 +85,10 @@ Every call goes through the typed clients in `lib/api/`, built from the generate
 - Zod schemas in `lib/validation/*.ts` + react-hook-form (`@hookform/resolvers`).
 - Server 422s: `applyServerErrors(error, setError)` (`lib/forms.ts`) maps `details.fields` onto form fields.
 - User-facing error text: `lib/error-messages.ts`, keyed by backend `code`. Never show the server `message`.
+  `errorMessage(e, overrides)` lets one screen reword a code (e.g. `ADMIN_ORDER_TRANSITION_MESSAGES`).
 - Toasts: `toast` / `toast.success` / `toast.error` from `lib/toast.ts`.
-- Formatting: `formatVnd`, `formatDate`, `conditionLabel`, order status labels in `lib/format.ts`.
+- Formatting: `formatVnd`, `formatDate`, `conditionLabel`, order status labels, `paymentLabel` /
+  `paymentShortLabel` in `lib/format.ts`.
 
 ## Auth and route guard
 

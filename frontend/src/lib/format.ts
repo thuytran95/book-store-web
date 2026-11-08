@@ -46,7 +46,12 @@ export const orderStatusColor = (s: OrderStatus): string => STATUS_COLOR[s];
 type PaymentMethod = components["schemas"]["PaymentMethod"];
 
 export function paymentLabel(method: PaymentMethod): string {
-  return method === "cod" ? "COD (khi nhận hàng)" : "Chuyển khoản";
+  return method === "cod" ? "Thu tiền khi giao (COD)" : "Chuyển khoản";
+}
+
+/** Short form for table columns: "COD" / "Chuyển khoản". */
+export function paymentShortLabel(method: PaymentMethod): string {
+  return method === "cod" ? "COD" : "Chuyển khoản";
 }
 
 /** Admin stock code shown in inventory UI (until a dedicated column exists). */

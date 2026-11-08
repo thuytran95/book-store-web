@@ -61,6 +61,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             pathname={pathname}
             onNavigate={onNavigate}
             muted
+            badges={{ "/admin/orders": overview.data?.pending_orders }}
           />
         </div>
       </div>
@@ -115,6 +116,7 @@ function NavGroup({
   pathname,
   onNavigate,
   muted,
+  badges,
 }: {
   links: readonly {
     href: string;
@@ -125,11 +127,14 @@ function NavGroup({
   pathname: string;
   onNavigate?: () => void;
   muted?: boolean;
+  /** Count bubble per href (hidden when 0 or not loaded), e.g. pending orders. */
+  badges?: Record<string, number | undefined>;
 }) {
   return (
     <nav className="flex flex-col gap-space-xs" aria-label="Quản trị">
       {links.map(({ href, label, icon, exact }) => {
         const active = exact ? pathname === href : pathname.startsWith(href);
+        const badge = badges?.[href];
         return (
           <Link
             key={href}
@@ -153,6 +158,14 @@ function NavGroup({
               )}
             />
             {label}
+            {badge ? (
+              <span
+                aria-label={`${badge} đơn chờ xác nhận`}
+                className="ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-pod-honey px-1.5 text-label-sm font-semibold tabular-nums text-tertiary"
+              >
+                {badge}
+              </span>
+            ) : null}
           </Link>
         );
       })}
