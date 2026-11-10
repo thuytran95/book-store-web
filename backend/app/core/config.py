@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
-    database_url: str = "postgresql+asyncpg://bookstore:bookstore@localhost:5432/bookstore"
+    database_url: str = "postgresql+asyncpg://bookstore:bookstore@localhost:5433/bookstore"
     jwt_secret: str = "change-me"
     access_token_ttl_min: int = 60
     refresh_token_ttl_days: int = 14

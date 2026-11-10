@@ -91,7 +91,7 @@ docker compose up --build
 | Shop | http://localhost:3000 |
 | API | http://localhost:8000 |
 | Swagger | http://localhost:8000/api/v1/docs |
-| Postgres | `localhost:5432` (user/pass/db: `bookstore`) |
+| Postgres | `localhost:5433` (user/pass/db: `bookstore`) |
 
 Dừng: `Ctrl+C`, hoặc `docker compose down`. Dữ liệu Postgres nằm trong volume `pgdata`.
 
@@ -119,7 +119,7 @@ cp .env.example .env
 Trong `.env`, đổi:
 
 ```
-DATABASE_URL=postgresql+asyncpg://bookstore:bookstore@localhost:5432/bookstore
+DATABASE_URL=postgresql+asyncpg://bookstore:bookstore@localhost:5433/bookstore
 MEDIA_ROOT=./backend/media
 ```
 

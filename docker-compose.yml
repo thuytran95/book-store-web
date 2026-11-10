@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: bookstore
       POSTGRES_DB: bookstore
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./backend/docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
@@ -57,7 +57,7 @@ services:
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
-      - "5050:80"
+      - "5051:80"
     volumes:
       - pgadmin:/var/lib/pgadmin
       - ./backend/docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
