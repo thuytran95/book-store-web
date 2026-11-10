@@ -7,7 +7,7 @@ import {
   Loader2,
   Trash2,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/lib/error-messages";
 import type { components } from "@/lib/api/schema";
@@ -44,6 +44,9 @@ type Props = {
   onDraftsChange?: (files: File[]) => void;
 };
 
+/** Stable default so `drafts` keeps the same identity across renders. */
+const NO_DRAFTS: File[] = [];
+
 function validate(file: File): string | null {
   if (!ACCEPT.includes(file.type))
     return "Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP";
@@ -55,7 +58,7 @@ export function ImageUploader({
   bookId,
   images,
   onChange,
-  drafts = [],
+  drafts = NO_DRAFTS,
   onDraftsChange,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,14 +69,14 @@ export function ImageUploader({
   const reorder = useReorderBookImages();
   const draftMode = bookId === undefined && onDraftsChange !== undefined;
   const disabled = bookId === undefined && !draftMode;
-  const previews = useMemo(
-    () => drafts.map((f) => URL.createObjectURL(f)),
-    [drafts],
-  );
-  useEffect(
-    () => () => previews.forEach((u) => URL.revokeObjectURL(u)),
-    [previews],
-  );
+  // Create and revoke blob URLs in the same effect so Strict Mode's
+  // mount → cleanup → mount cycle doesn't leave us with revoked URLs.
+  const [previews, setPreviews] = useState<string[]>([]);
+  useEffect(() => {
+    const urls = drafts.map((f) => URL.createObjectURL(f));
+    setPreviews(urls);
+    return () => urls.forEach((u) => URL.revokeObjectURL(u));
+  }, [drafts]);
   const ordered = [...images].sort((a, b) => a.position - b.position);
   const busy = remove.isPending || reorder.isPending;
 
@@ -215,15 +218,17 @@ export function ImageUploader({
         <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4">
           {drafts.map((file, i) => (
             <li
-              key={previews[i]}
+              key={`${file.name}-${file.size}-${file.lastModified}-${i}`}
               className="group relative aspect-[3/4] overflow-hidden rounded-lg border bg-muted"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previews[i]}
-                alt={file.name}
-                className="size-full object-cover"
-              />
+              {previews.length === drafts.length && previews[i] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previews[i]}
+                  alt={file.name}
+                  className="size-full object-cover"
+                />
+              )}
               {i === 0 && (
                 <span className="absolute top-1 left-1 rounded bg-black/60 px-1.5 text-[10px] text-white">
                   Ảnh bìa

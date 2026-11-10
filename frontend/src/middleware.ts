@@ -27,10 +27,15 @@ export function middleware(req: NextRequest) {
   const needsLogin = needsAdmin || LOGIN_PATHS.some((r) => r.test(pathname));
   if (!needsLogin) return NextResponse.next();
 
-  if (!loggedIn || (needsAdmin && access && roleFromToken(access) !== "admin")) {
+  if (
+    !loggedIn ||
+    (needsAdmin && access && roleFromToken(access) !== "admin")
+  ) {
     const url = req.nextUrl.clone();
     url.pathname = loggedIn ? "/" : "/login";
-    url.search = loggedIn ? "" : `?next=${encodeURIComponent(pathname + search)}`;
+    url.search = loggedIn
+      ? ""
+      : `?next=${encodeURIComponent(pathname + search)}`;
     return NextResponse.redirect(url);
   }
   return NextResponse.next();
