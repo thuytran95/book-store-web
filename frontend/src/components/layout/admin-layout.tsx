@@ -196,7 +196,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <div className="lg:pl-72">
+      <div className="pt-20 lg:pl-72">
         <header className="fixed left-0 right-0 top-0 z-30 flex h-20 items-center justify-between bg-surface-container-lowest/90 px-space-xl shadow-[0_1px_12px_rgba(27,77,62,0.04)] backdrop-blur-xl lg:left-72">
           <div className="flex flex-1 items-center gap-space-lg">
             <Button
@@ -250,7 +250,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="px-margin md:px-space-xl py-space-lg max-w-[1440px] mx-auto flex flex-col gap-space-lg pb-28 md:pb-space-xl">
+        <main className="px-margin md:px-space-xl py-space-lg max-w-[1440px] mx-auto flex flex-col gap-space-lg pb-28 md:pb-space-xl w-full">
           {children}
         </main>
       </div>

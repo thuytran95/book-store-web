@@ -4,7 +4,7 @@ import { ApiError } from "@/lib/api/errors";
 import { publicApi } from "@/lib/api/server";
 import { toApiQuery, type BookQuery, DEFAULT_PAGE_SIZE } from "@/lib/book-query";
 
-/** Server-side data helpers for catalog Server Components (cached, cookie-free). */
+/** Server-side data helpers for catalog Server Components (cookie-free; books are never cached so admin edits show immediately). */
 
 export const getCategories = cache(async () => {
   const { data } = await publicApi(300).GET("/api/v1/categories");

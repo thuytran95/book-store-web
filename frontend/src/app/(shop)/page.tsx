@@ -16,7 +16,8 @@ export const metadata: Metadata = {
   description: slide.description,
 };
 
-export const revalidate = 60;
+// Always render with fresh book data (admin edits must show immediately).
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { defaultTabBooks, heroBooks } = await getHomeData();

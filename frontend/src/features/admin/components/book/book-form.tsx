@@ -11,7 +11,7 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingBlock } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { hasCode } from "@/lib/api/errors";
 import { errorMessage } from "@/lib/error-messages";
@@ -44,7 +44,7 @@ export function BookForm({ bookId }: { bookId?: number }) {
   const router = useRouter();
   const isNew = bookId === undefined;
   const { data: book, isLoading, error } = useAdminBook(bookId);
-  const { data: categories = [] } = useAdminCategories();
+  const { data: categories = [], isLoading: categoriesLoading } = useAdminCategories();
   const save = useSaveBook();
   const upload = useUploadBookImage();
   /** Images picked before the book exists; uploaded right after it is created. */
@@ -54,6 +54,9 @@ export function BookForm({ bookId }: { bookId?: number }) {
     resolver: zodResolver(bookSchema) as Resolver<Values>,
     defaultValues: EMPTY,
   });
+
+  /** True once the fetched book has been written into the form (avoids an empty-form flash). */
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (!book) return;
@@ -69,10 +72,15 @@ export function BookForm({ bookId }: { bookId?: number }) {
       quantity: book.quantity,
       is_visible: book.is_visible,
     });
+    setHydrated(true);
   }, [book, form]);
 
-  if (!isNew && isLoading) return <Skeleton className="h-96" />;
   if (!isNew && error) return <ErrorMessage error={error} />;
+  // Wait for the book (edit) and the category options before showing the form, so the
+  // category select keeps its value and fields don't jump from empty to filled.
+  if ((!isNew && (isLoading || !hydrated)) || categoriesLoading) {
+    return <LoadingBlock className="min-h-96" />;
+  }
 
   const { register, handleSubmit, control, formState } = form;
 
@@ -260,3 +268,4 @@ export function BookForm({ bookId }: { bookId?: number }) {
     </div>
   );
 }
+

@@ -52,7 +52,7 @@ There is no test suite in either app.
   `features/catalog/server.ts` holds cached server-side fetchers for RSC pages.
 - `components/ui/` (shadcn primitives), `components/layout/` (shop/admin shells), `components/shared/`.
 - `lib/api/`: `client.ts` (`api` for client components, auto refresh-on-401), `server.ts`
-  (`serverApi()` forwards cookies, `publicApi(revalidate)` cacheable/cookie-free), `errors.ts` (`ApiError`),
+  (`serverApi()` forwards cookies, `publicApi(revalidate?)` cookie-free, no-store unless `revalidate` given), `errors.ts` (`ApiError`),
   `schema.d.ts` (generated, don't hand-edit).
 - `lib/`: `error-messages.ts`, `forms.ts` (`applyServerErrors`), `format.ts` (`formatVnd`, `formatDate`,
   `conditionLabel`), `session.ts` (`useSession`), `toast.ts`, `validation/*.ts` (zod schemas).

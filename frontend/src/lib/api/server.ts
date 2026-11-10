@@ -16,10 +16,16 @@ export async function serverApi() {
   }, SERVER_API_URL);
 }
 
-/** Like serverApi but without cookies and cacheable, for public catalog pages. */
-export function publicApi(revalidate = 60) {
+/**
+ * Like serverApi but without cookies, for public catalog pages.
+ * Pass `revalidate` (seconds) to cache; omit it to always fetch fresh data (no-store).
+ */
+export function publicApi(revalidate?: number) {
   return createApi(async (req) => {
-    const res = await fetch(req, { next: { revalidate } });
+    const res = await fetch(
+      req,
+      revalidate === undefined ? { cache: "no-store" } : { next: { revalidate } },
+    );
     if (!res.ok) throw await parseApiError(res);
     return res;
   }, SERVER_API_URL);

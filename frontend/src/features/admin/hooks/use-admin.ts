@@ -22,6 +22,9 @@ export type StockStatus = S["StockStatus"];
 const invalidate = (qc: ReturnType<typeof useQueryClient>, ...keys: string[]) =>
   Promise.all(keys.map((k) => qc.invalidateQueries({ queryKey: [k] })));
 
+/** Shop-side book caches (`useBookQuery`, `useBook`, home tabs) touched by admin book edits. */
+const SHOP_BOOK_KEYS = ["books", "book", "home-books"];
+
 // ---------------------------------------------------------------- Books
 
 export type AdminBookFilters = {
@@ -89,7 +92,7 @@ export function useSaveBook() {
     },
     onSuccess: () =>
       Promise.all([
-        invalidate(qc, "admin", "books", "book"),
+        invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
         qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
       ]),
   });
@@ -107,7 +110,7 @@ export function useDeleteBook() {
     },
     onSuccess: () =>
       Promise.all([
-        invalidate(qc, "admin", "books", "book"),
+        invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
         qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
       ]),
   });
@@ -138,7 +141,7 @@ function restoreBooks(qc: ReturnType<typeof useQueryClient>, snapshot?: BooksSna
 
 const refreshInventory = (qc: ReturnType<typeof useQueryClient>) =>
   Promise.all([
-    invalidate(qc, "admin", "books", "book"),
+    invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
     qc.invalidateQueries({ queryKey: ["admin", "inventory", "overview"] }),
   ]);
 
@@ -207,7 +210,7 @@ export function useUploadBookImage() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "book"),
+    onSuccess: () => invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
   });
 }
 
@@ -219,7 +222,7 @@ export function useDeleteBookImage() {
         params: { path: { book_id: bookId, image_id: imageId } },
       });
     },
-    onSuccess: () => invalidate(qc, "admin", "book"),
+    onSuccess: () => invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
   });
 }
 
@@ -234,7 +237,7 @@ export function useReorderBookImages() {
       });
       return data!;
     },
-    onSuccess: () => invalidate(qc, "admin", "book"),
+    onSuccess: () => invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
   });
 }
 
@@ -278,7 +281,7 @@ export function useDeleteCategory() {
         params: { path: { category_id: id }, query: { move_to: moveTo ?? null } },
       });
     },
-    onSuccess: () => invalidate(qc, "admin", "categories", "books", "book"),
+    onSuccess: () => invalidate(qc, "admin", "categories", ...SHOP_BOOK_KEYS),
   });
 }
 
@@ -354,7 +357,7 @@ export function useSaveAuthor() {
       return data!;
     },
     // A rename changes the books' author text too.
-    onSuccess: () => invalidate(qc, "admin", "book"),
+    onSuccess: () => invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
   });
 }
 
@@ -367,7 +370,7 @@ export function useDeleteAuthor() {
         params: { path: { author_id: id }, query: { merge_into: mergeInto ?? null } },
       });
     },
-    onSuccess: () => invalidate(qc, "admin", "book"),
+    onSuccess: () => invalidate(qc, "admin", ...SHOP_BOOK_KEYS),
   });
 }
 

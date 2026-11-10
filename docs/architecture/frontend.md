@@ -43,7 +43,7 @@ Every call goes through the typed clients in `lib/api/`, built from the generate
 | ------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
 | `api` (`client.ts`)                   | Client Components / hooks          | `credentials: include`; on 401 refreshes once and retries, else redirects to `/login?next=…` |
 | `serverApi()` (`server.ts`)           | Server Components needing the user | forwards request cookies, `no-store`, cannot refresh                                         |
-| `publicApi(revalidate)` (`server.ts`) | public catalog RSC                 | no cookies, ISR (`revalidate` seconds)                                                       |
+| `publicApi(revalidate)` (`server.ts`) | public catalog RSC                 | no cookies; `no-store` by default (books), ISR only when `revalidate` seconds given (categories) |
 
 - Non-2xx responses throw `ApiError { code, status, details, fieldErrors }` (`lib/api/errors.ts`).
   Check codes with `hasCode(e, "OUT_OF_STOCK")`.
